@@ -60,7 +60,7 @@ export class SessionService {
   async rabbitClient(data: string){
     //отправить запрос в rabbit
     try{
-        const amqp = new AMQPClient("amqp://test:test@localhost:5672")
+        const amqp = new AMQPClient("amqp://test:test@rabbit:5672")
         const connection = await amqp.connect()
         const chanel = await connection.channel()
         const toQueue = await chanel.queue('to_session_service')
