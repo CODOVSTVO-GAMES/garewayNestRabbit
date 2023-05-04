@@ -8,7 +8,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
-import { CreateSessionDto } from './dto/create-session.dto';
+import { SessionDto } from './dto/sessionDto';
 import { Response } from 'express';
 
 @Controller('session')
@@ -16,7 +16,7 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
-  session(@Body() createSessionDto: CreateSessionDto, @Res() res: Response) {
-    return this.sessionService.create(createSessionDto, res);
+  session(@Body() sessionDto: SessionDto, @Res() res: Response) {
+    return this.sessionService.sessionWorker(sessionDto, res);
   }
 }

@@ -1,4 +1,4 @@
-export class CreateSessionDto {
+export class SessionDto {
   data: string;
   hash: string;
   constructor(data: string, hash: string) {

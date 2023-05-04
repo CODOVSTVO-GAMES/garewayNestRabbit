@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { CreateSessionDto } from './dto/create-session.dto';
+import { Injectable } from '@nestjs/common';
+import { SessionDto } from './dto/sessionDto';
 import * as crypto from 'crypto';
 import { Response } from 'express';
 
@@ -9,47 +9,85 @@ import { AMQPClient } from '@cloudamqp/amqp-client'
 
 @Injectable()
 export class SessionService {
-  async create(createSessionDto: CreateSessionDto, res: Response) {
+  async sessionWorker(sessionDto: SessionDto, res: Response) {
+    const startDate = Date.now()
 
-    if (createSessionDto.hash != this.hashGenerator("data_"+ JSON.stringify(createSessionDto.data))){
-      console.log('Нарушена целостность данных')
-      res.status(HttpStatus.BAD_REQUEST).send()
-      return
+    const hash = sessionDto.hash;
+    const data = sessionDto.data;
+    
+    //----------
+    
+    if(this.isHashBad(hash, data) == true){
+        res.status(400).send()
+        const deltaTime = Date.now()- startDate
+        console.log("Запрос выполнен за " + deltaTime + " ms ")
+        return
     }
 
-    //отправить запрос в сервис
-    const amqp = new AMQPClient("amqp://test:test@localhost:5672")
-    const connection = await amqp.connect()
-    const chanel = await connection.channel()
-    const toQueue = await chanel.queue('to_session_service')
+    //----------
+    
+    const response = await this.rabbitClient(data)
+    // console.log(response)
 
-    const listenQueue = await chanel.queue('', {exclusive:true})// создаем очередь для ответа
+    let json = {"status": 404, "msg":"undefind3", "sessionId":0, "hash":""}
+    try{
+        json = JSON.parse(JSON.stringify(response))
+    }
+    catch{console.log("Ошибка парсинга json")}
 
-    const correlationId = this.generateUuid()
+    //----------
 
-    const consumer = await listenQueue.subscribe({noAck:false}, async(msg)=>{
-      if(msg.properties.correlationId == correlationId){
-        const serverResponse = JSON.parse(msg.bodyToString() || '{"status": 404, "msg":"Мы не знаем что это такое"}');
+    const status = json['status']
+    let toClient;
+    if(status == 200){//server response done
+        toClient = {"sessionId": json.sessionId, "hash": json.hash}
+    }
+    else if(status == 403){//server response error
+        toClient = json.msg
+    }
+    else{
+        console.log("status " + json.status + json.msg)
+        toClient = json.msg
+    }
+    res.status(status).json(toClient)
 
-        res.status(serverResponse.status).send('{"sessionId":"' + serverResponse.sessionId + '", "hash":"' + serverResponse.hash + '"}')
-        consumer.cancel();
-        return
-      }
-      else{console.log("Пришло какое то сообщение");}
+    const deltaTime = Date.now()- startDate
 
-      console.log(msg.bodyToString());//debug
-    })
+    console.log("Запрос выполнен за " + deltaTime + " ms " + JSON.stringify(json))
+    return
+  }
+  
+  async rabbitClient(data: string){
+    //отправить запрос в rabbit
+    try{
+        const amqp = new AMQPClient("amqp://test:test@localhost:5672")
+        const connection = await amqp.connect()
+        const chanel = await connection.channel()
+        const toQueue = await chanel.queue('to_session_service')
+        const correlationId = this.generateUuid()
 
-    toQueue.publish(JSON.stringify(createSessionDto.data), {correlationId:correlationId, replyTo: listenQueue.name, contentType: "application/json"})
+        const listenQueue = await chanel.queue('', {exclusive:true})// создаем очередь для ответа
 
-    await consumer.wait()
-    await connection.close()
+        let serverResponse = {"status": 404, "msg":"undefind2"}
 
-    //получить ответ
+        const consumer = await listenQueue.subscribe({noAck:true}, async(msg)=>{// слушаем очередь ответа
+            //получить ответ
+            if(msg.properties.correlationId == correlationId){
+                serverResponse = JSON.parse(msg.bodyToString() || '{"status": 404, "msg":"undefind2"}');
+                consumer.cancel();
+            }
+        })
 
-    //переслать ответ 
-    res.status(HttpStatus.OK).send()
-    return;
+        toQueue.publish(JSON.stringify(data), {correlationId:correlationId, replyTo: listenQueue.name, contentType: "application/json"})// публикуем запрос
+
+        await consumer.wait(5000) //ждем ответа в очереди ответа
+        await connection.close()
+
+        return serverResponse
+    } catch (e) {
+        e.connection.close()
+        return {"status": 508, "msg":"rabbit error"}
+    }
   }
 
   hashGenerator(str: string) : string {
@@ -59,6 +97,16 @@ export class SessionService {
   generateUuid() : string{
     return Math.random().toString() +
         Math.random().toString();
-}
+  }
+
+  isHashBad(hash: string, data: string) : boolean {
+    if (hash != this.hashGenerator("data_"+ JSON.stringify(data))){
+        console.log('Нарушена целостность данных')
+        return true
+    }
+    else{
+        return false
+    }
+  }
   
 }
