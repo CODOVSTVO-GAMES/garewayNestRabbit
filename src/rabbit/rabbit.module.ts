@@ -6,7 +6,7 @@ import { RabbitMQService } from './rabbit.servicve';
     imports: [
         ClientsModule.register([
           {
-            name: 'rabbit-mq-module',
+            name: 'session-rabbit-mq-module',
             transport: Transport.RMQ,
             options: {
                 urls: ['amqp://test:test@localhost:5672'],

@@ -3,8 +3,8 @@ export class ResponseDTO {
     data: string;
     hash: string;
     msg: string;
-    constructor(){
+    constructor() {
         this.status = 200
+        this.msg = 'Поле статус внутри клиента не использовать!. Использовать httpStatus'
     }
-  }
-  
+}

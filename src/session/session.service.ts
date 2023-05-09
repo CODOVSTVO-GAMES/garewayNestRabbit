@@ -53,7 +53,7 @@ export class SessionService {
         const responseDTO = new ResponseDTO();
 
         try {
-            const response = await this.client.send("user_created", data,).pipe(timeout(5000)).toPromise()
+            const response = await this.client.send("to_session_service", data,).pipe(timeout(5000)).toPromise()
 
             const json = JSON.parse(JSON.stringify(response))
 
