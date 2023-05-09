@@ -10,10 +10,12 @@ import {
 import { SessionService } from './session.service';
 import { SessionDto } from './dto/sessionDto';
 import { Response } from 'express';
+import { EventPattern } from '@nestjs/microservices';
 
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
+
 
   @Post()
   session(@Body() sessionDto: SessionDto, @Res() res: Response) {

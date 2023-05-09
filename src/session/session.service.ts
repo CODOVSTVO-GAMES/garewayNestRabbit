@@ -1,68 +1,92 @@
-/* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+
+import { Inject, Injectable } from '@nestjs/common';
 import { SessionDto } from './dto/sessionDto';
 import * as crypto from 'crypto';
 import { Response } from 'express';
 
 import { AMQPClient } from '@cloudamqp/amqp-client'
+import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
+import { EventPattern } from '@nestjs/microservices';
+import { timeout } from 'rxjs';
 
 
 @Injectable()
 export class SessionService {
+
+    constructor(
+        @Inject('session-module') private readonly client: ClientProxy,
+      ) {}
+    
+
+
   async sessionWorker(sessionDto: SessionDto, res: Response) {
-    const startDate = Date.now()
+    try {
+        const startDate = Date.now()
 
-    const hash = sessionDto.hash;
-    const data = sessionDto.data;
+        const hash = sessionDto.hash;
+        const data = sessionDto.data;
+        
+        //----------
+        
+        if(this.isHashBad(hash, data) == true){
+            res.status(400).send()
+            const deltaTime = Date.now()- startDate
+            console.log("Запрос выполнен за " + deltaTime + " ms ")//cтатус 
+            return
+        }
     
-    //----------
+        //----------
     
-    if(this.isHashBad(hash, data) == true){
-        res.status(400).send()
+        const response = await this.client.send("user_created", data, ).pipe(timeout(5000)).toPromise()
+        // const x = await this.client.send("fdf", data).pipe(timeout(5000)).toPromise()
+    
+        // toQueue.publish(JSON.stringify(data), {correlationId:correlationId, replyTo: listenQueue.name, contentType: "application/json"}
+    
+        // console.log(x)
+        
+        // const response = await this.rabbitClient(data)
+    
+    
+        let json = {"status": 404, "msg":"undefind3", "sessionId":0, "hash":""}
+        try{
+            json = response
+        }
+        catch{console.log("Ошибка парсинга json")}
+    
+        //----------
+    
+        const status = json['status']
+        let toClient;
+        if(status == 200){//server response done
+            toClient = {"sessionId": json.sessionId, "hash": json.hash}
+        }
+        else if(status == 403){//server response error
+            toClient = json.msg
+        }
+        else{
+            console.log("status " + json.status + json.msg)
+            toClient = json.msg
+        }
+        res.status(status).json(toClient)
+    
         const deltaTime = Date.now()- startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms ")
-        return
-    }
-
-    //----------
     
-    const response = await this.rabbitClient(data)
-    // console.log(response)
-
-    let json = {"status": 404, "msg":"undefind3", "sessionId":0, "hash":""}
-    try{
-        json = JSON.parse(JSON.stringify(response))
+        console.log("Запрос выполнен за " + deltaTime + " ms " + JSON.stringify(json))
+    } catch (e) {
+        console.log(e)
     }
-    catch{console.log("Ошибка парсинга json")}
-
-    //----------
-
-    const status = json['status']
-    let toClient;
-    if(status == 200){//server response done
-        toClient = {"sessionId": json.sessionId, "hash": json.hash}
-    }
-    else if(status == 403){//server response error
-        toClient = json.msg
-    }
-    else{
-        console.log("status " + json.status + json.msg)
-        toClient = json.msg
-    }
-    res.status(status).json(toClient)
-
-    const deltaTime = Date.now()- startDate
-
-    console.log("Запрос выполнен за " + deltaTime + " ms " + JSON.stringify(json))
-    return
+   
   }
   
   async rabbitClient(data: string){
     //отправить запрос в rabbit
     try{
+        //-> вынести в инстанс
         const amqp = new AMQPClient("amqp://test:test@rabbit:5672")
         const connection = await amqp.connect()
         const chanel = await connection.channel()
+        //||--<
+
         const toQueue = await chanel.queue('to_session_service')
         const correlationId = this.generateUuid()
 
@@ -85,6 +109,7 @@ export class SessionService {
 
         return serverResponse
     } catch (e) {
+        console.log(e)
         e.connection.close()
         return {"status": 508, "msg":"rabbit error"}
     }

@@ -25,4 +25,5 @@ services:
       - back
 networks:
   back:
+    driver: bridge
     
