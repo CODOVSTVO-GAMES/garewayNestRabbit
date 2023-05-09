@@ -1,11 +1,13 @@
 
 import { Inject, Injectable } from '@nestjs/common';
-import { SessionDto } from './dto/sessionDto';
 import * as crypto from 'crypto';
-import { Response } from 'express';
+import { Response, response } from 'express';
 
 import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
 import { timeout } from 'rxjs';
+import { RequestDTO } from 'src/dto/RequestDTO';
+import { ResponseDTO } from 'src/dto/ResponseDTO';
+import { ResponseServiceDTO } from 'src/dto/ResponseServiceDTO';
 
 
 @Injectable()
@@ -15,40 +17,31 @@ export class SessionService {
         @Inject('session-module') private readonly client: ClientProxy,
     ) { }
 
-    async sessionWorker(sessionDto: SessionDto, res: Response) {
+    async sessionWorker(requestDTO: RequestDTO, res: Response) {
         const startDate = Date.now()
 
-        const hash = sessionDto.hash;
-        const data = sessionDto.data;
+        let hash = '';
+        let data = '';
+        try{
+            hash = requestDTO.hash;
+            data = requestDTO.data;
+        }catch{
+            console.log('Ошибка парсинга')
+            res.status(400).send('parsing error')
+            return
+        }
 
         if (this.isHashBad(hash, data) == true) {
             res.status(400).send()
             return
         }
 
-        const rabbitResponse = await this.rabbitResponseLogic(data)
-
-        const status = rabbitResponse['status']
-        const resData = await JSON.parse(JSON.stringify(rabbitResponse['data']))
-
-        const toClient = { "sessionId": '', "hash": '' }
-        if (status == 200) {//server response done
-            toClient.sessionId = resData.sessionId
-            toClient.hash = resData.hash
-        }
-        else if (status == 403) {//server response error
-            console.log("status " + resData.status + resData.msg)
-            //log error
-        }
-        else {
-            console.log("status " + resData.status + resData.msg)
-            //log error
-        }
+        const responseDTO = await this.rabbitResponseLogic(data)
 
         const deltaTime = Date.now() - startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        console.log("Запрос выполнен за " + deltaTime + " ms. status: "+ responseDTO.status)//cтатус
          
-        res.status(status).json({"data" : toClient})
+        res.status(responseDTO.status).json(responseDTO)
         return
     }
 
@@ -56,30 +49,34 @@ export class SessionService {
         return ''
     }
 
-    async rabbitResponseLogic(data : string) {
-        const responseObj = {"status" : 200, "data" : ''}
+    async rabbitResponseLogic(data : string) : Promise<ResponseDTO>{
+        const responseDTO = new ResponseDTO();
 
         try {
             const response = await this.client.send("user_created", data,).pipe(timeout(5000)).toPromise()
 
-            responseObj.data = response
-            responseObj.status = response['status']
+            const json = JSON.parse(JSON.stringify(response))
+
+            const responseServiceDTO = new ResponseServiceDTO(json.status, json.data)
+
+            responseDTO.data = responseServiceDTO.data
+            responseDTO.status = responseServiceDTO.status
         } catch (e) {
             if (e.message == 'Timeout has occurred') {
-                responseObj.status = 408
+                responseDTO.status = 408
                 console.log("TIMEOUT")
             }
             else if (e.err.code == 'ECONNREFUSED') {
-                responseObj.status = 408
+                responseDTO.status = 408
                 this.client.close()
                 console.log("ECONNREFUSED")
             } else {
-                responseObj.status = 400
+                responseDTO.status = 400
                 console.log("Ошибка не обрабатывается")
                 console.log(e)
             }
         }
-        return responseObj
+        return responseDTO
     }
 
     

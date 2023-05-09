@@ -8,15 +8,15 @@ import {
   Res,
 } from '@nestjs/common';
 import { SessionService } from './session.service';
-import { SessionDto } from './dto/sessionDto';
 import { Response } from 'express';
+import { RequestDTO } from 'src/dto/RequestDTO';
 
 @Controller('session')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Post()
-  session(@Body() sessionDto: SessionDto, @Res() res: Response) {
-    return this.sessionService.sessionWorker(sessionDto, res);
+  session(@Body() requestDTO: RequestDTO, @Res() res: Response) {
+    return this.sessionService.sessionWorker(requestDTO, res);
   }
 }
