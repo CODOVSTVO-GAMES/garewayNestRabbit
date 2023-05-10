@@ -1,12 +1,13 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { Response, response } from 'express';
+import { Response } from 'express';
 
 import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
 import { timeout } from 'rxjs';
 import { RequestDTO } from 'src/dto/RequestDTO';
 import { ResponseDTO } from 'src/dto/ResponseDTO';
+import { RequestServiceDTO } from 'src/dto/RequestServiceDTO';
 import { ResponseServiceDTO } from 'src/dto/ResponseServiceDTO';
 
 
@@ -22,10 +23,10 @@ export class SessionService {
 
         let hash = '';
         let data = '';
-        try{
+        try {
             hash = requestDTO.hash;
             data = requestDTO.data;
-        }catch{
+        } catch {
             console.log('Ошибка парсинга')
             res.status(400).send('parsing error')
             return
@@ -36,24 +37,24 @@ export class SessionService {
             return
         }
 
-        const responseDTO = await this.rabbitResponseLogic(data)
+        const responseDTO = await this.rabbitResponseLogic(JSON.stringify(new RequestServiceDTO(data)))
 
         const deltaTime = Date.now() - startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms. status: "+ responseDTO.status)//cтатус
-         
+        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + responseDTO.status)//cтатус
+
         res.status(responseDTO.status).json(responseDTO)
         return
     }
 
-    responseObjectGenerator() : string {
+    responseObjectGenerator(): string {
         return ''
     }
 
-    async rabbitResponseLogic(data : string) : Promise<ResponseDTO>{
+    async rabbitResponseLogic(data: string): Promise<ResponseDTO> {
         const responseDTO = new ResponseDTO();
 
         try {
-            const response = await this.client.send("to_session_service", data,).pipe(timeout(5000)).toPromise()
+            const response = await this.client.send("to_session_service", data).pipe(timeout(5000)).toPromise()
 
             const json = JSON.parse(JSON.stringify(response))
 
@@ -78,8 +79,6 @@ export class SessionService {
         }
         return responseDTO
     }
-
-    
 
     hashGenerator(str: string): string {
         return crypto.createHash('md5').update(str).digest('hex')

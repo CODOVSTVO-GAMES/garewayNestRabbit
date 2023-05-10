@@ -9,11 +9,4 @@ export class AppController {
     private readonly rabbitMQService: RabbitMQService,
   ) {}
 
-  @Get()
-  getHello(): string {
-    this.rabbitMQService.send('rabbit-mq-producer', {
-      message: this.appService.getHello(),
-    });
-    return 'Message sent to the queue!';
-  }
 }
