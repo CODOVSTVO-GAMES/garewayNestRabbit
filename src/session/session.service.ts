@@ -23,7 +23,7 @@ export class SessionService {
         try{
             const responseServiceDTO = await this.sessionHandler(requestDTO)
             responseDTO.data = responseServiceDTO.data
-        }catch (e) {
+        }catch (e) {//прописать разные статусы
             status = 400
             console.log("Ошибка " + e)
         }
