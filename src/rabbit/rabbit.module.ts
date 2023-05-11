@@ -6,11 +6,11 @@ import { RabbitMQService } from './rabbit.servicve';
     imports: [
         ClientsModule.register([
           {
-            name: 'session-rabbit-mq-module',
+            name: 'session-module',
             transport: Transport.RMQ,
             options: {
-                urls: ['amqp://test:test@localhost:5672'],
-              queue: 'rabbit-mq-nest-js',
+                urls: ['amqp://test:test@rabbit:5672'],
+              queue: 'to_session_service',
             },
           },
         ]),

@@ -17,6 +17,6 @@ export class SessionController {
 
   @Post()
   session(@Body() requestDTO: RequestDTO, @Res() res: Response) {
-    return this.sessionService.sessionWorker(requestDTO, res);
+    return this.sessionService.sessionResponser(requestDTO, res);
   }
 }
