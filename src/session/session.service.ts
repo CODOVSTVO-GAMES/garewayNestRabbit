@@ -37,11 +37,11 @@ export class SessionService {
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
-        console.log("Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        console.log("session update Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
         return
     }
 
-    async sessionHandler(requestDTO: RequestDTO) : Promise<ResponseServiceDTO> {
+    private async sessionHandler(requestDTO: RequestDTO) : Promise<ResponseServiceDTO> {
         let hash = '';
         let data = {};
         try {
@@ -59,7 +59,7 @@ export class SessionService {
         return this.sessionLogic(data)
     }
 
-    async sessionLogic(data: object) : Promise<ResponseServiceDTO>{
+    private async sessionLogic(data: object) : Promise<ResponseServiceDTO>{
         const responseServiceDTO = await this.rabbitService.questionerSession(new RequestServiceDTO(data), TypesQueue.SESSION_UPDATER)
         if (responseServiceDTO.status != 200){
             console.log('session servise send status: ' + responseServiceDTO.status)
@@ -68,12 +68,12 @@ export class SessionService {
         return responseServiceDTO
     }
 
-    hashGenerator(str: string): string {
+    private hashGenerator(str: string): string {
         const hash = crypto.createHash('md5').update(str).digest('hex')
         return hash
     }
 
-    isHashBad(hash: string, data: object): boolean {
+    private isHashBad(hash: string, data: object): boolean {
         const str = JSON.stringify(data)
         if (hash != this.hashGenerator("data_" + str)) {
             console.log('Нарушена целостность данных')
@@ -90,8 +90,10 @@ export class SessionService {
         const requestServiceDTO = new RequestServiceDTO({ userId: '', sessionHash: sessionHash, sessionId: sessionId})
         const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         if(response.status == 200){
+            console.log('Сессия валидна')
             return true
         }
+        console.log('Сессия просрочена')
         return false
     }
 

@@ -7,5 +7,6 @@ import { RabbitModule } from 'src/rabbit/rabbit.module';
   imports: [RabbitModule],
   controllers: [SessionController],
   providers: [SessionService],
+  exports: [SessionService]
 })
 export class SessionModule {}
