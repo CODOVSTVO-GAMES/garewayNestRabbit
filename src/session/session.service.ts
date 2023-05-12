@@ -90,10 +90,8 @@ export class SessionService {
         const requestServiceDTO = new RequestServiceDTO({ userId: '', sessionHash: sessionHash, sessionId: sessionId})
         const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         if(response.status == 200){
-            console.log('Сессия валидна')
             return true
         }
-        console.log('Сессия просрочена')
         return false
     }
 
