@@ -14,7 +14,17 @@ import { RabbitMQService } from './rabbit.servicve';
             },
           },
         ]),
-    ],
+        ClientsModule.register([
+          {
+            name: 'data-storage-module',
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://test:test@rabbit:5672'],
+              queue: 'to_data_storage_service',
+            },
+          },
+        ]),
+      ],
       controllers: [],
       providers: [RabbitMQService],
       exports: [RabbitMQService],

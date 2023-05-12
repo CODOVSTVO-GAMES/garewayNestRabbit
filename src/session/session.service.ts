@@ -24,7 +24,13 @@ export class SessionService {
             const responseServiceDTO = await this.sessionHandler(requestDTO)
             responseDTO.data = responseServiceDTO.data
         }catch (e) {//прописать разные статусы
-            status = 400
+            if (e == 403 || e == 'parsing error' || e == 'hash bad'){
+                status = 403//перезагрузить клиент
+            }else if (e == 'timeout' || e == 'ECONNREFUSED'){
+                status = 408//повторить запрос
+            }else{
+                status == 400//хз че делать
+            }
             console.log("Ошибка " + e)
         }
         
@@ -37,7 +43,7 @@ export class SessionService {
 
     async sessionHandler(requestDTO: RequestDTO) : Promise<ResponseServiceDTO> {
         let hash = '';
-        let data = '';
+        let data = {};
         try {
             hash = requestDTO.hash;
             data = requestDTO.data;
@@ -53,16 +59,23 @@ export class SessionService {
         return this.sessionLogic(data)
     }
 
-    async sessionLogic(data: string) : Promise<ResponseServiceDTO>{
-        return await this.rabbitService.questioner(new RequestServiceDTO(data), TypesQueue.SESSION_HANDLER)
+    async sessionLogic(data: object) : Promise<ResponseServiceDTO>{
+        const responseServiceDTO = await this.rabbitService.questionerSession(new RequestServiceDTO(data), TypesQueue.SESSION_UPDATER)
+        if (responseServiceDTO.status != 200){
+            console.log('session servise send status: ' + responseServiceDTO.status)
+            throw 403
+        }
+        return responseServiceDTO
     }
 
     hashGenerator(str: string): string {
-        return crypto.createHash('md5').update(str).digest('hex')
+        const hash = crypto.createHash('md5').update(str).digest('hex')
+        return hash
     }
 
-    isHashBad(hash: string, data: string): boolean {
-        if (hash != this.hashGenerator("data_" + JSON.stringify(data))) {
+    isHashBad(hash: string, data: object): boolean {
+        const str = JSON.stringify(data)
+        if (hash != this.hashGenerator("data_" + str)) {
             console.log('Нарушена целостность данных')
             return true
         }
@@ -74,8 +87,8 @@ export class SessionService {
     //------------Перенести в другой сервис!!!------------>
 
     async isSessionValid(sessionId: number, sessionHash: string) : Promise<boolean> {
-        const requestServiceDTO = new RequestServiceDTO(JSON.stringify({ userId: '', sessionHash: sessionHash, sessionId: sessionId}))
-        const response = await this.rabbitService.questioner(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)
+        const requestServiceDTO = new RequestServiceDTO({ userId: '', sessionHash: sessionHash, sessionId: sessionId})
+        const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         if(response.status == 200){
             return true
         }

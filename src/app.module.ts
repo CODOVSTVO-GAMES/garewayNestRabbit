@@ -4,9 +4,10 @@ import { AppService } from './app.service';
 import { SessionModule } from './session/session.module';
 import { RabbitModule } from './rabbit/rabbit.module';
 import { LoggerMiddleware } from './logget'
+import { DataStorageModule } from './data-storage/data-storage.module';
 
 @Module({
-  imports: [SessionModule, RabbitModule],
+  imports: [SessionModule, RabbitModule, DataStorageModule],
   controllers: [AppController],
   providers: [AppService],
 })
