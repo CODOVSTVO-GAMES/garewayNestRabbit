@@ -1,44 +1,35 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Inject, Injectable } from '@nestjs/common';
-import { RequestDTO } from 'src/dto/RequestDTO';
-import { ResponseDTO } from 'src/dto/ResponseDTO';
-import * as crypto from 'crypto';
+import { Injectable } from '@nestjs/common';
+import { RequestDTO } from 'src/others/dto/RequestDTO';
+import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
-import { ResponseServiceDTO } from 'src/dto/ResponseServiceDTO';
-import { RabbitMQService } from 'src/rabbit/rabbit.servicve';
-import { RequestServiceDTO } from 'src/dto/RequestServiceDTO';
+import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
+import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
+import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
-import { SessionService } from 'src/session/session.service';
 
 @Injectable()
 export class DataStorageService {
-    @Inject(SessionService)
-    private readonly sessionServise : SessionService
+    constructor(private readonly rabbitService: RabbitMQService) { }
 
-    constructor(private readonly rabbitService: RabbitMQService){}
-
-
-
-    async dataStoragePostResponser(requestDTO: RequestDTO, res: Response){
-        // console.log(requestDTO)
+    async dataStoragePostResponser(requestDTO: RequestDTO, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
 
-        try{
+        try {
             const responseServiceDTO = await this.dataStoragePostHandler(requestDTO)
             responseDTO.data = responseServiceDTO.data
-        }catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error' || e == 'hash bad' || e == 'session bad'){
+        } catch (e) {//прописать разные статусы
+            if (e == 403 || e == 'parsing error') {
                 status = 403//перезагрузить клиент
-            }else if (e == 'timeout' || e == 'ECONNREFUSED'){
+            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
                 status = 408//повторить запрос
-            }else{
+            } else {
                 status == 400//хз че делать
             }
             console.log("--->Ошибка " + e)
         }
-        
+
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
@@ -46,34 +37,21 @@ export class DataStorageService {
         return
     }
 
-    async dataStoragePostHandler(requestDTO: RequestDTO) : Promise<ResponseServiceDTO> {
-        let hash = '';
-        let sessionId = 0;
-        let sessionHash = '';
+    async dataStoragePostHandler(requestDTO: RequestDTO): Promise<ResponseServiceDTO> {
         let data = {};
         try {
-            hash = requestDTO.hash;
             data = requestDTO.data;
-            sessionHash = requestDTO.sessionHash;
-            sessionId = requestDTO.sessionid
         } catch {
             console.log('Ошибка парсинга')
             throw "parsing error"
         }
 
-        if(!await this.isSessionValid(sessionId,sessionHash)){
-            throw "session bad"
-        }
-
-        if (this.isHashBad(hash, data) == true) {
-            throw "hash bad"
-        }
         return this.dataStoragePostLogic(data)
     }
 
-    async dataStoragePostLogic(data: object){
+    async dataStoragePostLogic(data: object) {
         const responseServiceDTO = await this.rabbitService.questionerDataStorage(new RequestServiceDTO(data), TypesQueue.DATA_POST)
-        if (responseServiceDTO.status != 200){
+        if (responseServiceDTO.status != 200) {
             console.log('dataStorage servise send status: ' + responseServiceDTO.status)
             throw 403
         }
@@ -84,25 +62,25 @@ export class DataStorageService {
     //----------------------------------
 
 
-    async dataStorageGetResponser(params: any, res: Response){
+    async dataStorageGetResponser(params: any, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
 
-        try{
+        try {
             const responseServiceDTO = await this.dataStorageGetHandler(params)
             responseDTO.data = responseServiceDTO.data
-        }catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error' || e == 'hash bad' || e == 'session bad'){
+        } catch (e) {//прописать разные статусы
+            if (e == 403 || e == 'parsing error') {
                 status = 403//перезагрузить клиент
-            }else if (e == 'timeout' || e == 'ECONNREFUSED'){
+            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
                 status = 408//повторить запрос
-            }else{
+            } else {
                 status == 400//хз че делать
             }
             console.log("--->Ошибка " + e)
         }
-        
+
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
@@ -110,69 +88,24 @@ export class DataStorageService {
         return
     }
 
-    async dataStorageGetHandler(params: any) : Promise<ResponseServiceDTO> {
-        let hash = '';
-        let sessionId = 0;
-        let sessionHash = '';
+    async dataStorageGetHandler(params: any): Promise<ResponseServiceDTO> {
         let data = {};
         try {
             const json = JSON.parse(params)
-            hash = json.hash;
             data = json.data;
-            sessionId = json.sessionId
-            sessionHash = json.sessionHash
-            
         } catch {
-            console.log('Ошибка парсинга')
             throw "parsing error"
         }
 
-        if(!await this.isSessionValid(sessionId,sessionHash)){
-            throw "session bad"
-        }
-
-        if (this.isHashBad(hash, data) == true) {
-            throw "hash bad"
-        }
         return this.dataStorageGetLogic(data)
     }
 
-    async dataStorageGetLogic(data: object){
+    async dataStorageGetLogic(data: object) {
         const responseServiceDTO = await this.rabbitService.questionerDataStorage(new RequestServiceDTO(data), TypesQueue.DATA_GET)
-        if (responseServiceDTO.status != 200){
+        if (responseServiceDTO.status != 200) {
             console.log('dataStorage servise send status: ' + responseServiceDTO.status)
             throw 403
         }
         return responseServiceDTO
     }
-
-
-    //----------------------------------
-
-
-    async isSessionValid(sessionId: number, sessionHash: string): Promise<boolean>{
-        // return true
-        return await this.sessionServise.isSessionValid(sessionId, sessionHash)
-    }
-
-
-    //----------------------------------
-
-
-    hashGenerator(str: string): string {
-        const hash = crypto.createHash('md5').update(str).digest('hex')
-        return hash
-    }
-
-    isHashBad(hash: string, data: object): boolean {
-        const str = JSON.stringify(data)
-        if (hash != this.hashGenerator("data_" + str)) {
-            console.log('Нарушена целостность данных')
-            return true
-        }
-        else {
-            return false
-        }
-    }
-
 }

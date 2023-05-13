@@ -2,8 +2,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { timeout } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
-import { RequestServiceDTO } from 'src/dto/RequestServiceDTO';
-import { ResponseServiceDTO } from 'src/dto/ResponseServiceDTO';
+import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
+import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class RabbitMQService {
         @Inject('data-storage-module') private readonly dataStorageClient: ClientProxy,
     ) { }
 
-    async questionerSession(data: RequestServiceDTO, queue: string) : Promise<ResponseServiceDTO> {        
+    async questionerSession(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.sessionClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
@@ -34,7 +34,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerDataStorage(data: RequestServiceDTO, queue: string) : Promise<ResponseServiceDTO> {        
+    async questionerDataStorage(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.dataStorageClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
