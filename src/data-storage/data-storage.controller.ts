@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Post, Res, Get, Query } from '@nestjs/common';
 import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { Response } from 'express';
 import { DataStorageService } from './data-storage.service';

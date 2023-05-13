@@ -49,7 +49,7 @@ export class DataStorageService {
         return this.dataStoragePostLogic(data)
     }
 
-    async dataStoragePostLogic(data: object) {
+    async dataStoragePostLogic(data: object): Promise<ResponseServiceDTO> {
         const responseServiceDTO = await this.rabbitService.questionerDataStorage(new RequestServiceDTO(data), TypesQueue.DATA_POST)
         if (responseServiceDTO.status != 200) {
             console.log('dataStorage servise send status: ' + responseServiceDTO.status)

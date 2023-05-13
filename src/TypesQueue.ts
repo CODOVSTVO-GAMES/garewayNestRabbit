@@ -7,5 +7,7 @@ export class TypesQueue {
     public static DATA_GET: string = "get_data";
     public static DATA_POST: string = "save_data";
 
+    public static EVENTS_POST: string = "save_events";
+
 }
 

@@ -24,6 +24,16 @@ import { RabbitMQService } from './rabbit.servicve';
             },
           },
         ]),
+        ClientsModule.register([
+          {
+            name: 'events-module',
+            transport: Transport.RMQ,
+            options: {
+                urls: ['amqp://test:test@rabbit:5672'],
+              queue: 'to_events_service',
+            },
+          },
+        ]),
       ],
       controllers: [],
       providers: [RabbitMQService],
