@@ -22,8 +22,11 @@ export class DataStorageService {
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error') {
                 status = 403//перезагрузить клиент
-            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
+            } else if (e == 'ECONNREFUSED') {
                 status = 408//повторить запрос
+            } else if (e == 'timeout') {
+                console.log('Сервис не отвечает но запрос положен в очередь')
+                //log
             } else {
                 status == 400//хз че делать
             }
