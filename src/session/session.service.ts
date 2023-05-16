@@ -84,7 +84,7 @@ export class SessionService {
         }
 
         const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-session', 'validator', response.status, msg, JSON.stringify(response), deltaTime)
+        this.monitoringService.sendLog('gateway-session', 'validator', response.status, msg, JSON.stringify(requestServiceDTO), deltaTime)
         return resStatus
     }
 
