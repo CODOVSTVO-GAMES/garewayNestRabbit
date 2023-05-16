@@ -15,7 +15,7 @@ import { MonitoringService } from 'src/monitoring/monitoring.service';
 export class SessionService {
     @Inject(MonitoringService)
     private readonly monitoringService: MonitoringService
-    
+
     constructor(private readonly rabbitService: RabbitMQService) { }
 
     async sessionResponser(requestDTO: RequestDTO, res: Response) {
@@ -36,7 +36,7 @@ export class SessionService {
                 msg = e
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: '+ status
+                msg = 'Неизвестная ошибка. Статус: ' + status
             }
             console.log("Ошибка " + e)
         }
@@ -77,12 +77,14 @@ export class SessionService {
         const requestServiceDTO = new RequestServiceDTO({ userId: '', sessionHash: sessionHash, sessionId: sessionId })
         const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         let resStatus = false
+        let msg = 'no valid'
         if (response.status == 200) {
             resStatus = true
+            msg = 'OK'
         }
 
         const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-session', 'validator', response.status, 'no valid', JSON.stringify(response), deltaTime)
+        this.monitoringService.sendLog('gateway-session', 'validator', response.status, msg, JSON.stringify(response), deltaTime)
         return resStatus
     }
 
