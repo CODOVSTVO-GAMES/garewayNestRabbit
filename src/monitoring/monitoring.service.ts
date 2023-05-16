@@ -1,4 +1,4 @@
-import { Global, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TypesQueue } from 'src/TypesQueue';
 import { MonitoringDTO } from 'src/others/dto/MonitoringDTO';
 import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
