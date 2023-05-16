@@ -9,5 +9,7 @@ export class TypesQueue {
 
     public static EVENTS_POST: string = "save_events";
 
+    public static SEND_LOG: string = "send_log";
+
 }
 

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Global } from '@nestjs/common';
 import { timeout } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
 import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 
+@Global()
 @Injectable()
 export class RabbitMQService {
 
@@ -12,6 +13,7 @@ export class RabbitMQService {
         @Inject('session-module') private readonly sessionClient: ClientProxy,
         @Inject('data-storage-module') private readonly dataStorageClient: ClientProxy,
         @Inject('events-module') private readonly eventsClient: ClientProxy,
+        @Inject('monitoring-module') private readonly monitoringClient: ClientProxy
     ) { }
 
     async questionerSession(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
@@ -65,6 +67,24 @@ export class RabbitMQService {
             }
             else if (e.err.code == 'ECONNREFUSED') {
                 this.eventsClient.close()
+                throw "ECONNREFUSED"
+            } else {
+                console.log("Ошибка не обрабатывается")
+                console.log(e)
+                throw "unkown"
+            }
+        }
+    }
+
+    async questionerMonitoring(data: RequestServiceDTO, queue: string) {
+        try {
+            await this.monitoringClient.send(queue, data).pipe(timeout(10000)).toPromise()
+        } catch (e) {
+            if (e.message == 'Timeout has occurred') {
+                throw "timeout"
+            }
+            else if (e.err.code == 'ECONNREFUSED') {
+                this.monitoringClient.close()
                 throw "ECONNREFUSED"
             } else {
                 console.log("Ошибка не обрабатывается")

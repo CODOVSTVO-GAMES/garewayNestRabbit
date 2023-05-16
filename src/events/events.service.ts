@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { Response } from 'express';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
@@ -6,9 +6,12 @@ import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { TypesQueue } from 'src/TypesQueue';
 import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
+import { MonitoringService } from 'src/monitoring/monitoring.service';
 
 @Injectable()
 export class EventsService {
+    @Inject(MonitoringService)
+    private readonly monitoringService: MonitoringService
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
@@ -16,6 +19,7 @@ export class EventsService {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
+        let msg = 'OK'
 
         try {
             const responseServiceDTO = await this.eventsHandler(requestDTO)
@@ -23,13 +27,17 @@ export class EventsService {
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error') {
                 status = 403//перезагрузить клиент
+                msg = e
             } else if (e == 'ECONNREFUSED') {
                 status = 408//повторить запрос
+                msg = e
             } else if (e == 'timeout') {
                 console.log('Сервис не отвечает но запрос положен в очередь')
+                msg = e
                 //log
             } else {
                 status == 400//хз че делать
+                msg = 'Неизвестная ошибка. Статус: '+ status
             }
             console.log("--->Ошибка " + e)
         }
@@ -37,7 +45,8 @@ export class EventsService {
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
-        console.log("event Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        // console.log("event Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
+        this.monitoringService.sendLog('gateway-events', 'save', status, msg, JSON.stringify(requestDTO), deltaTime)
         return
     }
 

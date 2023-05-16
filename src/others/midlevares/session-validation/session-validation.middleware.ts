@@ -1,5 +1,6 @@
 import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { MonitoringService } from 'src/monitoring/monitoring.service';
 import { SessionService } from 'src/session/session.service';
 
 @Injectable()
@@ -7,6 +8,9 @@ export class SessionValidationMiddleware implements NestMiddleware {
 
     @Inject(SessionService)
     private readonly sessionServise: SessionService
+
+    @Inject(MonitoringService)
+    private readonly monitoringService: MonitoringService
 
     async use(req: Request, res: Response, next: NextFunction) {
         let sessionId = 0;
@@ -17,6 +21,7 @@ export class SessionValidationMiddleware implements NestMiddleware {
                 sessionId = req.body.sessionId
                 sessionHash = req.body.sessionHash
             } catch (e) {
+                this.monitoringService.sendLog('gateway-session-validator', 'post', 403, 'parsing error', req.body)
                 res.status(403).send("parsing error")
                 return
             }
@@ -28,13 +33,15 @@ export class SessionValidationMiddleware implements NestMiddleware {
                 sessionHash = json.sessionHash
             } else {
                 console.log('parsing')
+                this.monitoringService.sendLog('gateway-session-validator', 'get', 403, 'parsing error', req.body)
                 res.status(403).send("parsing error")
                 return
             }
         }
 
         if (!await this.sessionServise.isSessionValid(sessionId, sessionHash)) {
-            console.log('session')
+            console.log('session error')
+            this.monitoringService.sendLog('gateway-session-validator', 'is-session-valid', 403, 'session error', req.body)
             res.status(403).send("session bad")
             return
         }
