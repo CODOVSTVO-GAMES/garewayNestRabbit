@@ -5,13 +5,17 @@ import * as fs from 'fs';
 
 async function bootstrap() {
 
+    const certPath = __dirname + '/secrets/fetchain.pem'
+    const keyPath = __dirname + '/secrets/privkey.pem'
 
     const httpsOptions = {
-        // key: fs.readFileSync('./secrets/privkey.pem'),
-        // cert: fs.readFileSync('./secrets/fetchain.pem')
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
     }
 
     const app = await NestFactory.create(AppModule, { httpsOptions });
+
+
     await app.listen(9600);
 }
 bootstrap();
