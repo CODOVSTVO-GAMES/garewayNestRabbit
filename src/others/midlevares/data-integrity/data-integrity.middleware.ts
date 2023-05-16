@@ -33,6 +33,8 @@ export class DataIntegrityMiddleware implements NestMiddleware {
 
         if (this.cryptoService.isHashBad(hash, data)) {
             console.log("hash bad1")
+            console.log(hash)
+            console.log(data)
             res.status(403).send("hash bad")
             return
         }
