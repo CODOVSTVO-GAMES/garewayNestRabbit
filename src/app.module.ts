@@ -15,7 +15,7 @@ import { MonitoringModule } from './monitoring/monitoring.module';
     controllers: [AppController],
     providers: [AppService, CryptoService],
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule {    
     configure(consumer: MiddlewareConsumer) {
         consumer
             .apply(DataIntegrityMiddleware)
