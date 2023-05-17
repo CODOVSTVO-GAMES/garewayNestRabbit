@@ -11,5 +11,7 @@ export class TypesQueue {
 
     public static SEND_LOG: string = "send_log";
 
+    public static USER_GET: string = "get_user";
+
 }
 

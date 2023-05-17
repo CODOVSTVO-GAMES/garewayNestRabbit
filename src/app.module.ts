@@ -9,9 +9,10 @@ import { DataIntegrityMiddleware } from './others/midlevares/data-integrity/data
 import { SessionValidationMiddleware } from './others/midlevares/session-validation/session-validation.middleware';
 import { EventsModule } from './events/events.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
+import { UserModule } from './user/user.module';
 
 @Module({
-    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule],
+    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule],
     controllers: [AppController],
     providers: [AppService, CryptoService],
 })
