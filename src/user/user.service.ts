@@ -42,7 +42,7 @@ export class UserService {
 
         const deltaTime = Date.now() - startDate
         // console.log("session update Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
-        this.monitoringService.sendLog('gateway-user', 'handler', status, msg, JSON.stringify(requestDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-user', 'get', status, msg, JSON.stringify(requestDTO), deltaTime)
         return
     }
 
