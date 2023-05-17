@@ -41,7 +41,7 @@ export class SessionValidationMiddleware implements NestMiddleware {
 
         if (!await this.sessionServise.isSessionValid(sessionId, sessionHash)) {
             console.log('session error')
-            this.monitoringService.sendLog('gateway-session-validator', 'is-session-valid', 403, 'session error', req.body)
+            // this.monitoringService.sendLog('gateway-session-validator', 'is-session-valid', 403, 'session error', req.body)//дублирует лог в сервисе сессий
             res.status(403).send("session bad")
             return
         }
