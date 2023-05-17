@@ -31,9 +31,9 @@ export class SessionValidationMiddleware implements NestMiddleware {
                 const json = JSON.parse(req.query.dto)
                 sessionId = json.sessionId;
                 sessionHash = json.sessionHash
-                console.log(json)
+                // console.log(json)
             } else {
-                console.log('parsing')
+                console.log('parsing error')
                 this.monitoringService.sendLog('gateway-session-validator', 'get', 403, 'parsing error', req.body)
                 res.status(403).send("parsing error")
                 return

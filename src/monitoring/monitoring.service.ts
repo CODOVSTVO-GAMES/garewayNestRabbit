@@ -8,8 +8,8 @@ import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 export class MonitoringService {
     constructor(private readonly rabbitService: RabbitMQService) { }
 
-    async sendLog(service: string, requestName: string, status: number, msg: string, data: string, time = 0) {
+    sendLog(service: string, requestName: string, status: number, msg: string, data: string, time = 0) {
         const monitoringDTO = new MonitoringDTO(service, requestName, status, msg, data, time)
-        await this.rabbitService.questionerMonitoring(new RequestServiceDTO(monitoringDTO), TypesQueue.SEND_LOG)
+        this.rabbitService.questionerMonitoring(new RequestServiceDTO(monitoringDTO), TypesQueue.SEND_LOG)
     }
 }
