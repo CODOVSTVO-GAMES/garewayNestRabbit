@@ -74,7 +74,7 @@ export class SessionService {
     async isSessionValid(sessionId: number, sessionHash: string): Promise<boolean> {
         const startDate = Date.now()
 
-        const requestServiceDTO = new RequestServiceDTO({ userId: '', sessionHash: sessionHash, sessionId: sessionId })
+        const requestServiceDTO = new RequestServiceDTO({ accountId: '', sessionHash: sessionHash, sessionId: sessionId })
         const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         let resStatus = false
         let msg = 'no valid'

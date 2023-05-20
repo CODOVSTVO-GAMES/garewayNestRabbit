@@ -22,7 +22,6 @@ export class DataStorageService {
         let msg = 'OK'
 
         try {
-            console.log(requestDTO)
             const responseServiceDTO = await this.dataStoragePostHandler(requestDTO)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {//прописать разные статусы
