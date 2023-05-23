@@ -13,5 +13,6 @@ export class TypesQueue {
 
     public static USER_GET: string = "get_user";
 
+    public static PRODUCTS_GET: string = "get_products";
 }
 

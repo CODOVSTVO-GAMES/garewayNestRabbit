@@ -10,9 +10,10 @@ import { SessionValidationMiddleware } from './others/midlevares/session-validat
 import { EventsModule } from './events/events.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { UserModule } from './user/user.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
-    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule],
+    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule, PaymentsModule],
     controllers: [AppController],
     providers: [AppService, CryptoService],
 })

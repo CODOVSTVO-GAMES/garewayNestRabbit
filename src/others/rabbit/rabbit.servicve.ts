@@ -14,7 +14,8 @@ export class RabbitMQService {
         @Inject('data-storage-module') private readonly dataStorageClient: ClientProxy,
         @Inject('events-module') private readonly eventsClient: ClientProxy,
         @Inject('monitoring-module') private readonly monitoringClient: ClientProxy,
-        @Inject('user-module') private readonly userClient: ClientProxy
+        @Inject('user-module') private readonly userClient: ClientProxy,
+        @Inject('payments-module') private readonly paymentsClient: ClientProxy,
     ) { }
 
     async questionerSession(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
@@ -106,6 +107,26 @@ export class RabbitMQService {
             }
             else if (e.err.code == 'ECONNREFUSED') {
                 this.eventsClient.close()
+                throw "ECONNREFUSED"
+            } else {
+                console.log("Ошибка не обрабатывается")
+                console.log(e)
+                throw "unkown"
+            }
+        }
+    }
+
+    async questionerPayments(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+        try {
+            const response = await this.paymentsClient.send(queue, data).pipe(timeout(4000)).toPromise()
+            const json = JSON.parse(JSON.stringify(response))
+            return new ResponseServiceDTO(json.status, json.data)
+        } catch (e) {
+            if (e.message == 'Timeout has occurred') {
+                throw "timeout"
+            }
+            else if (e.err.code == 'ECONNREFUSED') {
+                this.dataStorageClient.close()
                 throw "ECONNREFUSED"
             } else {
                 console.log("Ошибка не обрабатывается")
