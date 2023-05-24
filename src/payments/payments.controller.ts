@@ -12,7 +12,9 @@ export class PaymentsController {
     }
 
     @Get('okCallback')
-    okCallback(@Query('dto') params: string, @Res() res: Response) {
+    okCallback(@Query() params: string, @Res() res: Response) {
+        console.log('dwqdqw')
         console.log(params)
     }
+
 }
