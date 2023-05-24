@@ -25,7 +25,7 @@ export class AppModule implements NestModule {
 
         consumer
             .apply(DataIntegrityMiddleware, SessionValidationMiddleware)
-            .exclude('session', 'user', 'payments/products')
+            .exclude('session', 'user', 'payments/okCallback')
             .forRoutes('*');
     }
 }
