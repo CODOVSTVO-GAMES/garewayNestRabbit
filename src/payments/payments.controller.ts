@@ -6,7 +6,7 @@ import { Response } from 'express';
 export class PaymentsController {
     constructor(private readonly paymentsService: PaymentsService) { }
 
-    @Get()
+    @Get('products')
     products(@Query('dto') params: string, @Res() res: Response) {
         this.paymentsService.productsGetResponser(params, res);
     }
