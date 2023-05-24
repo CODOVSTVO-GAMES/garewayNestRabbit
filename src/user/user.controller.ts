@@ -17,8 +17,8 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post()
-    user(@Body() requestDTO: RequestDTO, @Res() res: Response,@Query() params: string) {
-        console.log("user header" + params)
+    user(@Body() requestDTO: RequestDTO, @Res() res: Response, @Query() params: string) {
+        console.log("user header" + JSON.stringify(params))
         return this.userService.userResponser(requestDTO, res);
     }
 }
