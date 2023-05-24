@@ -10,4 +10,9 @@ export class PaymentsController {
     products(@Query('dto') params: string, @Res() res: Response) {
         this.paymentsService.productsGetResponser(params, res);
     }
+
+    @Get('okCallback')
+    okCallback(@Query('dto') params: string, @Res() res: Response) {
+        console.log(params)
+    }
 }
