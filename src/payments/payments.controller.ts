@@ -13,8 +13,7 @@ export class PaymentsController {
 
     @Get('okCallback')
     okCallback(@Query() params: string, @Res() res: Response) {
-        console.log('dwqdqw')
-        console.log(params)
+        this.paymentsService.okKallbackGetResponser(params, res)
     }
 
 }

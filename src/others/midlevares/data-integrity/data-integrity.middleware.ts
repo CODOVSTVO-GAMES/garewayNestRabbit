@@ -15,8 +15,6 @@ export class DataIntegrityMiddleware implements NestMiddleware {
         let hash = ''
         let data = {}
 
-        console.log(req.headers)
-
         if (req.method == "POST") {
             try {
                 hash = req.body.hash
