@@ -92,7 +92,6 @@ export class PaymentsService {
     private async okKallbackGetHandler(params: any): Promise<ResponseServiceDTO> {
         let data = {};
         try {
-            console.log(params)
             const json = JSON.parse(JSON.stringify(params))
             data = json;
         } catch {

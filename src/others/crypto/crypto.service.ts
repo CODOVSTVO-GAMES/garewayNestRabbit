@@ -8,7 +8,6 @@ export class CryptoService {
         const hash = crypto.createHash('md5').update(str).digest('hex')
         return hash
     }
-
     isHashBad(hash: string, data: object): boolean {
         const str = "data_" + JSON.stringify(data)
         if (hash != this.hashGenerator(str)) {
