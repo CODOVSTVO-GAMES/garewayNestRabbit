@@ -18,7 +18,7 @@ export class UserController {
 
     @Post()
     user(@Body() requestDTO: RequestDTO, @Res() res: Response, @Query() params: string) {
-        console.log("user header" + JSON.stringify(params))
+        // console.log("user header" + JSON.stringify(params))
         return this.userService.userResponser(requestDTO, res);
     }
 }

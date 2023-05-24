@@ -93,7 +93,7 @@ export class PaymentsService {
         let data = {};
         try {
             console.log(params)
-            const json = JSON.parse(params)
+            const json = JSON.parse(JSON.stringify(params))
             data = json;
         } catch {
             throw "parsing error"
