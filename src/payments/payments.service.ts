@@ -68,18 +68,10 @@ export class PaymentsService {
 
         try {
             status = await this.okKallbackGetHandler(params)
-        } catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error') {
-                status = 403//перезагрузить клиент
-                msg = e
-            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
-                status = 2//повторить запрос
-                msg = e
-            } else {
-                status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: ' + status
-            }
+        } catch (e) {
             console.log("--->Ошибка " + e)
+            msg = e
+            res.header('Invocation-error', '2')
             responce = '<?xml version="1.0" encoding="UTF-8"?><ns2:error_response xmlns:ns2="http://api.forticom.com/1.0/"><error_code>2</error_code><error_msg>CALLBACK_INVALID_PAYMENT : Payment is invalid and can not be processed</error_msg></ns2:error_response>'
         }
 
@@ -103,7 +95,7 @@ export class PaymentsService {
         return this.okKallbackGetLogic(data)
     }
 
-    private async okKallbackGetLogic(data: object) : Promise<number> {
+    private async okKallbackGetLogic(data: object): Promise<number> {
         const responseServiceDTO = await this.rabbitService.questionerPayments(new RequestServiceDTO(data), TypesQueue.OK_CALLBACK)
         if (responseServiceDTO.status != 200) {
             console.log('okCalback servise send status: ' + responseServiceDTO.status)
