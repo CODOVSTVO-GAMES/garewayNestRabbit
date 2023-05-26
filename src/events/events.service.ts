@@ -5,7 +5,6 @@ import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { TypesQueue } from 'src/TypesQueue';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
 
 @Injectable()
@@ -62,7 +61,7 @@ export class EventsService {
     }
 
     async eventsLogic(data: object): Promise<ResponseServiceDTO> {
-        const responseServiceDTO = await this.rabbitService.questionerEvents(new RequestServiceDTO(data), TypesQueue.EVENTS_POST)
+        const responseServiceDTO = await this.rabbitService.questionerEvents(data, TypesQueue.EVENTS_POST)
         if (responseServiceDTO.status != 200) {
             console.log('events servise send status: ' + responseServiceDTO.status)
             throw 403

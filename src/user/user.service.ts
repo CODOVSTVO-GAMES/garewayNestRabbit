@@ -5,7 +5,6 @@ import { Response } from 'express';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 
 @Injectable()
@@ -58,7 +57,7 @@ export class UserService {
     }
 
     private async userLogic(data: object): Promise<ResponseServiceDTO> {
-        const responseServiceDTO = await this.rabbitService.questionerUser(new RequestServiceDTO(data), TypesQueue.USER_GET)
+        const responseServiceDTO = await this.rabbitService.questionerUser(data, TypesQueue.USER_GET)
         if (responseServiceDTO.status != 200) {
             console.log('session servise send status: ' + responseServiceDTO.status)
             throw 403

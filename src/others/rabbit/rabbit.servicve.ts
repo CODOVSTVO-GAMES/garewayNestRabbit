@@ -2,7 +2,6 @@
 import { Injectable, Inject, Global } from '@nestjs/common';
 import { timeout } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices/client/client-proxy';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 
 @Global()
@@ -18,7 +17,7 @@ export class RabbitMQService {
         @Inject('payments-module') private readonly paymentsClient: ClientProxy,
     ) { }
 
-    async questionerSession(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+    async questionerSession(data: object, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.sessionClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
@@ -38,7 +37,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerDataStorage(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+    async questionerDataStorage(data: object, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.dataStorageClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
@@ -58,7 +57,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerEvents(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+    async questionerEvents(data: object, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.eventsClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
@@ -78,7 +77,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerMonitoring(data: RequestServiceDTO, queue: string) {
+    async questionerMonitoring(data: object, queue: string) {
         try {
             await this.monitoringClient.emit(queue, data).toPromise()
         } catch (e) {
@@ -96,7 +95,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerUser(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+    async questionerUser(data: object, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.userClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))
@@ -116,7 +115,7 @@ export class RabbitMQService {
         }
     }
 
-    async questionerPayments(data: RequestServiceDTO, queue: string): Promise<ResponseServiceDTO> {
+    async questionerPayments(data: object, queue: string): Promise<ResponseServiceDTO> {
         try {
             const response = await this.paymentsClient.send(queue, data).pipe(timeout(4000)).toPromise()
             const json = JSON.parse(JSON.stringify(response))

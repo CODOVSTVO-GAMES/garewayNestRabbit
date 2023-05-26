@@ -4,7 +4,6 @@ import { Response } from 'express';
 
 import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
@@ -61,7 +60,7 @@ export class SessionService {
     }
 
     private async sessionLogic(data: object): Promise<ResponseServiceDTO> {
-        const responseServiceDTO = await this.rabbitService.questionerSession(new RequestServiceDTO(data), TypesQueue.SESSION_UPDATER)
+        const responseServiceDTO = await this.rabbitService.questionerSession(data, TypesQueue.SESSION_UPDATER)
         if (responseServiceDTO.status != 200) {
             console.log('session servise send status: ' + responseServiceDTO.status)
             throw 403
@@ -74,8 +73,8 @@ export class SessionService {
     async isSessionValid(sessionId: number, sessionHash: string): Promise<boolean> {
         const startDate = Date.now()
 
-        const requestServiceDTO = new RequestServiceDTO({ accountId: '', sessionHash: sessionHash, sessionId: sessionId })
-        const response = await this.rabbitService.questionerSession(requestServiceDTO, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
+        const data = { accountId: '', sessionHash: sessionHash, sessionId: sessionId }
+        const response = await this.rabbitService.questionerSession(data, TypesQueue.SESSION_VALIDATOR)//кэш ускорит обработку
         let resStatus = false
         let msg = 'no valid'
         if (response.status == 200) {
@@ -84,7 +83,7 @@ export class SessionService {
         }
 
         const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-session', 'validator', response.status, msg, JSON.stringify(requestServiceDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-session', 'validator', response.status, msg, JSON.stringify(data), deltaTime)
         return resStatus
     }
 

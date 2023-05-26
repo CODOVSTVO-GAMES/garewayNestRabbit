@@ -4,7 +4,6 @@ import { Response } from 'express';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 
 @Injectable()
@@ -50,7 +49,7 @@ export class PaymentsService {
     }
 
     private async productsGetLogic() {
-        const responseServiceDTO = await this.rabbitService.questionerPayments(new RequestServiceDTO({}), TypesQueue.PRODUCTS_GET)
+        const responseServiceDTO = await this.rabbitService.questionerPayments({}, TypesQueue.PRODUCTS_GET)
         if (responseServiceDTO.status != 200) {
             console.log('payments servise send status: ' + responseServiceDTO.status)
             throw 403
@@ -96,7 +95,7 @@ export class PaymentsService {
     }
 
     private async okKallbackGetLogic(data: object): Promise<number> {
-        const responseServiceDTO = await this.rabbitService.questionerPayments(new RequestServiceDTO(data), TypesQueue.OK_CALLBACK)
+        const responseServiceDTO = await this.rabbitService.questionerPayments(data, TypesQueue.OK_CALLBACK)
         if (responseServiceDTO.status != 200) {
             console.log('okCalback servise send status: ' + responseServiceDTO.status)
             throw 403

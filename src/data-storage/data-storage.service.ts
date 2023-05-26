@@ -4,7 +4,6 @@ import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
-import { RequestServiceDTO } from 'src/others/dto/RequestServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
 
@@ -63,7 +62,7 @@ export class DataStorageService {
     }
 
     async dataStoragePostLogic(data: object): Promise<ResponseServiceDTO> {
-        const responseServiceDTO = await this.rabbitService.questionerDataStorage(new RequestServiceDTO(data), TypesQueue.DATA_POST)
+        const responseServiceDTO = await this.rabbitService.questionerDataStorage(data, TypesQueue.DATA_POST)
         if (responseServiceDTO.status != 200) {
             console.log('dataStorage servise send status: ' + responseServiceDTO.status)
             throw 403
@@ -119,7 +118,7 @@ export class DataStorageService {
     }
 
     async dataStorageGetLogic(data: object) {
-        const responseServiceDTO = await this.rabbitService.questionerDataStorage(new RequestServiceDTO(data), TypesQueue.DATA_GET)
+        const responseServiceDTO = await this.rabbitService.questionerDataStorage(data, TypesQueue.DATA_GET)
         if (responseServiceDTO.status != 200) {
             console.log('dataStorage servise send status: ' + responseServiceDTO.status)
             throw 403
