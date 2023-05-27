@@ -79,8 +79,7 @@ export class PaymentsService {
     private async okKallbackGetHandler(params: any): Promise<number> {
         let data = {};
         try {
-            const json = JSON.parse(JSON.stringify(params))
-            data = json;
+            data = JSON.parse(JSON.stringify(params))
         } catch {
             throw "parsing error"
         }

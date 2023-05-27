@@ -35,7 +35,7 @@ export class DataStorageService {
                 //log
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: '+ status
+                msg = 'Неизвестная ошибка. Статус: ' + status
             }
             console.log("--->Ошибка " + e)
         }
@@ -83,7 +83,7 @@ export class DataStorageService {
                 msg = e
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: '+ status
+                msg = 'Неизвестная ошибка. Статус: ' + status
             }
             console.log("--->Ошибка " + e)
         }
@@ -99,8 +99,7 @@ export class DataStorageService {
     async dataStorageGetHandler(params: any): Promise<ResponseServiceDTO> {
         let data = {};
         try {
-            const json = JSON.parse(params)
-            data = json.data;
+            data = JSON.parse(params)
         } catch {
             throw "parsing error"
         }
