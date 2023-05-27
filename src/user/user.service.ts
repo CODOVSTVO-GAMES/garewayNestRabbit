@@ -14,14 +14,14 @@ export class UserService {
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
-    async userResponser(requestDTO: RequestDTO, res: Response) {
+    async userResponser(body: object, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.userHandler(requestDTO)
+            const responseServiceDTO = await this.userHandler(body)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error') {
@@ -41,22 +41,16 @@ export class UserService {
 
         const deltaTime = Date.now() - startDate
         // console.log("session update Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
-        this.monitoringService.sendLog('gateway-user', 'get', status, msg, JSON.stringify(requestDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-user', 'get', status, msg, JSON.stringify(body), deltaTime)
         return
     }
 
-    private async userHandler(requestDTO: RequestDTO): Promise<ResponseServiceDTO> {
-        let data = {};
-        try {
-            data = requestDTO.data;
-        } catch {
-            throw "parsing error"
-        }
-
-        return this.userLogic(data)
+    private async userHandler(body: object): Promise<ResponseServiceDTO> {
+        return this.userLogic(body)
     }
 
     private async userLogic(data: object): Promise<ResponseServiceDTO> {
+        console.log(JSON.stringify(data))
         const responseServiceDTO = await this.rabbitService.questionerUser(data, TypesQueue.USER_GET)
         if (responseServiceDTO.status != 200) {
             console.log('session servise send status: ' + responseServiceDTO.status)
