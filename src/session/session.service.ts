@@ -17,14 +17,14 @@ export class SessionService {
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
-    async sessionResponser(requestDTO: RequestDTO, res: Response) {
+    async sessionResponser(body: object, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.sessionHandler(requestDTO)
+            const responseServiceDTO = await this.sessionHandler(body)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error2' || e == 'hash bad') {
@@ -35,7 +35,7 @@ export class SessionService {
                 msg = e
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка.' + e + ' Статус: ' + status
+                msg = 'Ошибка:' + e + ' Статус: ' + status
             }
             console.log("Ошибка " + e)
         }
@@ -43,20 +43,12 @@ export class SessionService {
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
-        // console.log("session update Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
-        this.monitoringService.sendLog('gateway-session', 'update', status, msg, JSON.stringify(requestDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-session', 'update', status, msg, JSON.stringify(body), deltaTime)
         return
     }
 
-    private async sessionHandler(requestDTO: RequestDTO): Promise<ResponseServiceDTO> {
-        let data = {};
-        try {
-            data = requestDTO.data;
-        } catch {
-            throw "parsing error"
-        }
-
-        return this.sessionLogic(data)
+    private async sessionHandler(body: object): Promise<ResponseServiceDTO> {
+        return this.sessionLogic(body)
     }
 
     private async sessionLogic(data: object): Promise<ResponseServiceDTO> {

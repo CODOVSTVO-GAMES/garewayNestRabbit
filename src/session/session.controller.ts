@@ -16,7 +16,7 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
   @Post()
-  session(@Body() requestDTO: RequestDTO, @Res() res: Response) {
-    return this.sessionService.sessionResponser(requestDTO, res);
+  session(@Body() data: object, @Res() res: Response) {
+    return this.sessionService.sessionResponser(data, res);
   }
 }
