@@ -2,7 +2,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';

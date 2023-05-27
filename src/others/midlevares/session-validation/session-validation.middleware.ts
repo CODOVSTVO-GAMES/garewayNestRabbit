@@ -16,28 +16,19 @@ export class SessionValidationMiddleware implements NestMiddleware {
         let sessionId = 0;
         let sessionHash = '';
 
-        if (req.method == "POST") {
-            try {
-                sessionId = req.body.sessionId
-                sessionHash = req.body.sessionHash
-            } catch (e) {
-                this.monitoringService.sendLog('gateway-session-validator', 'post', 403, 'parsing error', req.body)
-                res.status(403).send("parsing error")
-                return
+
+        try {
+            if (typeof req.headers.sessionid == 'string') {
+                sessionId = Number.parseInt(req.headers.sessionid)
             }
-        }
-        else if (req.method == "GET") {
-            if (typeof req.query.dto == 'string') {
-                const json = JSON.parse(req.query.dto)
-                sessionId = json.sessionId;
-                sessionHash = json.sessionHash
-                // console.log(json)
-            } else {
-                console.log('parsing error')
-                this.monitoringService.sendLog('gateway-session-validator', 'get', 403, 'parsing error', req.body)
-                res.status(403).send("parsing error")
-                return
+
+            if (typeof req.headers.sessionhash == 'string') {
+                sessionHash = req.headers.sessionhash
             }
+        } catch {
+            this.monitoringService.sendLog('gateway-session-validator', 'validate', 403, 'bad', '')
+            res.status(403).send()
+            return
         }
 
         if (!await this.sessionServise.isSessionValid(sessionId, sessionHash)) {

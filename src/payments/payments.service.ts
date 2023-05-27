@@ -17,23 +17,16 @@ export class PaymentsService {
     async productsGetResponser(params: any, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
-        let status = 200
+        let status = 0
         let msg = 'OK'
 
         try {
             const responseServiceDTO = await this.productsGetHandler()
             responseDTO.data = responseServiceDTO.data
+            status = 200
         } catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error') {
-                status = 403//перезагрузить клиент
-                msg = e
-            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
-                status = 408//повторить запрос
-                msg = e
-            } else {
-                status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: ' + status
-            }
+            status == 400//хз че делать
+            msg = 'Неизвестная ошибка. Статус: ' + status
             console.log("--->Ошибка " + e)
         }
 

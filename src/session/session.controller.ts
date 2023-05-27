@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { Response } from 'express';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 
 @Controller('session')
 export class SessionController {

@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
@@ -14,14 +13,14 @@ export class DataStorageService {
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
-    async dataStoragePostResponser(requestDTO: RequestDTO, res: Response) {
+    async dataStoragePostResponser(body: object, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.dataStoragePostHandler(requestDTO)
+            const responseServiceDTO = await this.dataStoragePostHandler(body)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error') {
@@ -45,20 +44,12 @@ export class DataStorageService {
 
         const deltaTime = Date.now() - startDate
         // console.log("data post Запрос выполнен за " + deltaTime + " ms. status: " + status)
-        this.monitoringService.sendLog('gateway-data', 'save', status, msg, JSON.stringify(requestDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-data', 'save', status, msg, JSON.stringify(body), deltaTime)
         return
     }
 
-    async dataStoragePostHandler(requestDTO: RequestDTO): Promise<ResponseServiceDTO> {
-        let data = {};
-        try {
-            data = requestDTO.data;
-        } catch {
-            console.log('Ошибка парсинга')
-            throw "parsing error"
-        }
-
-        return this.dataStoragePostLogic(data)
+    async dataStoragePostHandler(body: object): Promise<ResponseServiceDTO> {
+        return this.dataStoragePostLogic(body)
     }
 
     async dataStoragePostLogic(data: object): Promise<ResponseServiceDTO> {

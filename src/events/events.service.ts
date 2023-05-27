@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { Response } from 'express';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
@@ -14,14 +13,14 @@ export class EventsService {
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
-    async eventsResponser(requestDTO: RequestDTO, res: Response) {
+    async eventsResponser(body: object, res: Response) {
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.eventsHandler(requestDTO)
+            const responseServiceDTO = await this.eventsHandler(body)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {//прописать разные статусы
             if (e == 403 || e == 'parsing error') {
@@ -36,7 +35,7 @@ export class EventsService {
                 //log
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: '+ status
+                msg = 'Неизвестная ошибка. Статус: ' + status
             }
             console.log("--->Ошибка " + e)
         }
@@ -45,19 +44,12 @@ export class EventsService {
 
         const deltaTime = Date.now() - startDate
         // console.log("event Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
-        this.monitoringService.sendLog('gateway-events', 'save', status, msg, JSON.stringify(requestDTO), deltaTime)
+        this.monitoringService.sendLog('gateway-events', 'save', status, msg, JSON.stringify(body), deltaTime)
         return
     }
 
-    async eventsHandler(requestDTO: RequestDTO): Promise<ResponseServiceDTO> {
-        let data = {};
-        try {
-            data = requestDTO.data;
-        } catch {
-            console.log('Ошибка парсинга')
-            throw "parsing error"
-        }
-        return this.eventsLogic(data)
+    async eventsHandler(body: object): Promise<ResponseServiceDTO> {
+        return this.eventsLogic(body)
     }
 
     async eventsLogic(data: object): Promise<ResponseServiceDTO> {

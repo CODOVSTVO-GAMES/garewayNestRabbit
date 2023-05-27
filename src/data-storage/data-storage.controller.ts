@@ -1,5 +1,4 @@
 import { Body, Controller, Post, Res, Get, Query } from '@nestjs/common';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { Response } from 'express';
 import { DataStorageService } from './data-storage.service';
 
@@ -9,8 +8,8 @@ export class DataStorageController {
     constructor(private readonly dataStorageService: DataStorageService) { }
 
     @Post()
-    dataPostStorage(@Body() requestDTO: RequestDTO, @Res() res: Response) {
-        return this.dataStorageService.dataStoragePostResponser(requestDTO, res)
+    dataPostStorage(@Body() body: object, @Res() res: Response) {
+        return this.dataStorageService.dataStoragePostResponser(body, res)
     }
 
     @Get()
