@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
@@ -32,7 +31,7 @@ export class UserService {
                 msg = e
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: ' + status
+                msg = 'Неизвестная ошибка.' + e + ' Статус: ' + status
             }
             console.log("Ошибка " + e)
         }
