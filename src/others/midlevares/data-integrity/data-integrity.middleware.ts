@@ -15,6 +15,8 @@ export class DataIntegrityMiddleware implements NestMiddleware {
         let hash = ''
         let data = {}
 
+        console.log(req.headers)
+
         let header
 
         try {
@@ -24,6 +26,11 @@ export class DataIntegrityMiddleware implements NestMiddleware {
         console.log(header.sessionId)
         console.log(header.sessionHash)
         console.log(header.dataHash)
+
+        console.log(header.get('sessionId'))
+        console.log(header.get('sessionHash'))
+        console.log(header.get('dataHash'))
+        console.log('---------------------')
 
         if (req.method == "POST") {
             try {
