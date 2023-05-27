@@ -35,7 +35,7 @@ export class SessionService {
                 msg = e
             } else {
                 status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: ' + status
+                msg = 'Неизвестная ошибка.' + e + ' Статус: ' + status
             }
             console.log("Ошибка " + e)
         }
