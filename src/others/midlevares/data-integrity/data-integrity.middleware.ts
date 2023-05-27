@@ -24,8 +24,7 @@ export class DataIntegrityMiddleware implements NestMiddleware {
             }
             else if (req.method == "GET") {
                 if (typeof req.query.dto == 'string') {
-                    const json = JSON.parse(req.query.dto)
-                    data = json.data
+                    data = JSON.parse(req.query.dto)
                 }
             }
         } catch {
