@@ -8,7 +8,6 @@ import {
     Res,
     Query,
 } from '@nestjs/common';
-import { RequestDTO } from 'src/others/dto/RequestDTO';
 import { UserService } from './user.service';
 import { Response } from 'express';
 
@@ -17,8 +16,7 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post()
-    user(@Body() data: object, @Res() res: Response, @Query() params: string) {
-        console.log("user header" + JSON.stringify(params))
+    user(@Body() data: object, @Res() res: Response) {
         return this.userService.userResponser(data, res);
     }
 }

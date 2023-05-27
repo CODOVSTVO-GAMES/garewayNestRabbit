@@ -50,7 +50,6 @@ export class UserService {
     }
 
     private async userLogic(data: object): Promise<ResponseServiceDTO> {
-        console.log(JSON.stringify(data))
         const responseServiceDTO = await this.rabbitService.questionerUser(data, TypesQueue.USER_GET)
         if (responseServiceDTO.status != 200) {
             console.log('session servise send status: ' + responseServiceDTO.status)
