@@ -5,12 +5,16 @@ import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
 import { TypesQueue } from 'src/TypesQueue';
+import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
 
 @Injectable()
 export class PaymentsService {
 
     @Inject(MonitoringService)
     private readonly monitoringService: MonitoringService
+
+    @Inject(ErrorhandlerService)
+    private readonly errorHandlerService: ErrorhandlerService
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
@@ -25,9 +29,9 @@ export class PaymentsService {
             responseDTO.data = responseServiceDTO.data
             status = 200
         } catch (e) {//прописать разные статусы
-            status == 400//хз че делать
-            msg = 'Неизвестная ошибка. Статус: ' + status
-            console.log("--->Ошибка " + e)
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+            console.log(e)
         }
 
         res.status(status).json(responseDTO)
@@ -45,7 +49,7 @@ export class PaymentsService {
         const responseServiceDTO = await this.rabbitService.questionerPayments({}, TypesQueue.PRODUCTS_GET)
         if (responseServiceDTO.status != 200) {
             console.log('payments servise send status: ' + responseServiceDTO.status)
-            throw 403
+            throw responseServiceDTO.status
         }
         return responseServiceDTO
     }

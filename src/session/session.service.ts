@@ -7,12 +7,16 @@ import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { TypesQueue } from 'src/TypesQueue';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
+import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
 
 
 @Injectable()
 export class SessionService {
     @Inject(MonitoringService)
     private readonly monitoringService: MonitoringService
+
+    @Inject(ErrorhandlerService)
+    private readonly errorHandlerService: ErrorhandlerService
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
@@ -25,18 +29,10 @@ export class SessionService {
         try {
             const responseServiceDTO = await this.sessionHandler(body)
             responseDTO.data = responseServiceDTO.data
-        } catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error2' || e == 'hash bad') {
-                status = 403//перезагрузить клиент
-                msg = e
-            } else if (e == 'timeout' || e == 'ECONNREFUSED') {
-                status = 408//повторить запрос
-                msg = e
-            } else {
-                status == 400//хз че делать
-                msg = 'Ошибка:' + e + ' Статус: ' + status
-            }
-            console.log("Ошибка " + e)
+        } catch (e) {
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+            console.log(e)
         }
 
         res.status(status).json(responseDTO)
@@ -54,7 +50,7 @@ export class SessionService {
         const responseServiceDTO = await this.rabbitService.questionerSession(data, TypesQueue.SESSION_UPDATER)
         if (responseServiceDTO.status != 200) {
             console.log('session servise send status: ' + responseServiceDTO.status)
-            throw 403
+            throw responseServiceDTO.status
         }
         return responseServiceDTO
     }

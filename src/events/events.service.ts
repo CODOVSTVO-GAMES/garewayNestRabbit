@@ -5,11 +5,15 @@ import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { TypesQueue } from 'src/TypesQueue';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
+import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
 
 @Injectable()
 export class EventsService {
     @Inject(MonitoringService)
     private readonly monitoringService: MonitoringService
+
+    @Inject(ErrorhandlerService)
+    private readonly errorHandlerService: ErrorhandlerService
 
     constructor(private readonly rabbitService: RabbitMQService) { }
 
@@ -20,36 +24,24 @@ export class EventsService {
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.eventsHandler(body)
+            const responseServiceDTO = await this.eventsLogic(body)
             responseDTO.data = responseServiceDTO.data
-        } catch (e) {//прописать разные статусы
-            if (e == 403 || e == 'parsing error') {
-                status = 403//перезагрузить клиент
-                msg = e
-            } else if (e == 'ECONNREFUSED') {
-                status = 408//повторить запрос
-                msg = e
-            } else if (e == 'timeout') {
+        } catch (e) {
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+            console.log(e)
+            if (e == 'timeout') {
                 console.log('Сервис не отвечает но запрос положен в очередь')
-                msg = e
+                status = 200
                 //log
-            } else {
-                status == 400//хз че делать
-                msg = 'Неизвестная ошибка. Статус: ' + status
             }
-            console.log("--->Ошибка " + e)
         }
 
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
-        // console.log("event Запрос выполнен за " + deltaTime + " ms. status: " + status)//cтатус
         this.monitoringService.sendLog('gateway-events', 'save', status, msg, JSON.stringify(body), deltaTime)
         return
-    }
-
-    async eventsHandler(body: object): Promise<ResponseServiceDTO> {
-        return this.eventsLogic(body)
     }
 
     async eventsLogic(data: object): Promise<ResponseServiceDTO> {

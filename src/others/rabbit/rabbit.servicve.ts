@@ -23,17 +23,7 @@ export class RabbitMQService {
             const json = JSON.parse(JSON.stringify(response))
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.sessionClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.sessionClient)
         }
     }
 
@@ -43,17 +33,7 @@ export class RabbitMQService {
             const json = JSON.parse(JSON.stringify(response))
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.dataStorageClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.dataStorageClient)
         }
     }
 
@@ -63,17 +43,7 @@ export class RabbitMQService {
             const json = JSON.parse(JSON.stringify(response))
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.eventsClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.eventsClient)
         }
     }
 
@@ -81,17 +51,7 @@ export class RabbitMQService {
         try {
             await this.monitoringClient.emit(queue, data).toPromise()
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.monitoringClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.monitoringClient)
         }
     }
 
@@ -101,17 +61,7 @@ export class RabbitMQService {
             const json = JSON.parse(JSON.stringify(response))
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.eventsClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.userClient)
         }
     }
 
@@ -121,17 +71,21 @@ export class RabbitMQService {
             const json = JSON.parse(JSON.stringify(response))
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
-            if (e.message == 'Timeout has occurred') {
-                throw "timeout"
-            }
-            else if (e.err.code == 'ECONNREFUSED') {
-                this.dataStorageClient.close()
-                throw "ECONNREFUSED"
-            } else {
-                console.log("Ошибка не обрабатывается")
-                console.log(e)
-                throw "unkown"
-            }
+            throw this.errorHandler(e, this.paymentsClient)
+        }
+    }
+
+    private errorHandler(error: any, client: ClientProxy): string {
+        if (error.message == 'Timeout has occurred') {
+            return "timeout"
+        }
+        else if (error.err.code == 'ECONNREFUSED') {
+            client.close()
+            return "ECONNREFUSED"
+        } else {
+            console.log("Ошибка не обрабатывается")
+            console.log(error)
+            return "unkown"
         }
     }
 }

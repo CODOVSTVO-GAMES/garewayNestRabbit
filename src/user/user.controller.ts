@@ -16,7 +16,7 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post()
-    user(@Body() data: object, @Res() res: Response) {
-        return this.userService.userResponser(data, res);
+    user(@Body() body: object, @Res() res: Response) {
+        return this.userService.userResponser(body, res);
     }
 }

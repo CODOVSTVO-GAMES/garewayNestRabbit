@@ -11,9 +11,10 @@ import { EventsModule } from './events/events.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { UserModule } from './user/user.module';
 import { PaymentsModule } from './payments/payments.module';
+import { ErrorhandlerModule } from './others/errorhandler/errorhandler.module';
 
 @Module({
-    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule, PaymentsModule],
+    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule, PaymentsModule, ErrorhandlerModule],
     controllers: [AppController],
     providers: [AppService, CryptoService],
 })
