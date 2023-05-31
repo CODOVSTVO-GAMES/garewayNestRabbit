@@ -9,7 +9,6 @@ export class ConfigController {
 
     @Get()
     config(@Query('dto') params: string, @Res() res: Response) {
-        console.log('1')
         return this.configService.configGetResponser(params, res)
     }
 }

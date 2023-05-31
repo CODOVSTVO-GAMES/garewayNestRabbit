@@ -15,7 +15,6 @@ export class ConfigService {
     ) { }
 
     async configGetResponser(params: any, res: Response) {
-        console.log('2')
         const startDate = Date.now()
         const responseDTO = new ResponseDTO()
         let status = 200
@@ -37,7 +36,6 @@ export class ConfigService {
     }
 
     async configGetHandler(params: any): Promise<ResponseServiceDTO> {
-        console.log('3')
         let data = {};
         try {
             data = JSON.parse(params)
@@ -49,7 +47,6 @@ export class ConfigService {
     }
 
     async configGetLogic(data: object) {
-        console.log('4')
         const responseServiceDTO = await this.rabbitService.questionerConfig(data, TypesQueue.START_CONFIG_GET)
         if (responseServiceDTO.status != 200) {
             console.log('config servise send status: ' + responseServiceDTO.status)
