@@ -50,7 +50,7 @@ export class ConfigService {
 
     async configGetLogic(data: object) {
         console.log('4')
-        const responseServiceDTO = await this.rabbitService.questionerDataStorage(data, TypesQueue.START_CONFIG_GET)
+        const responseServiceDTO = await this.rabbitService.questionerConfig(data, TypesQueue.START_CONFIG_GET)
         if (responseServiceDTO.status != 200) {
             console.log('config servise send status: ' + responseServiceDTO.status)
             throw responseServiceDTO.status
