@@ -12,9 +12,10 @@ import { MonitoringModule } from './monitoring/monitoring.module';
 import { UserModule } from './user/user.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ErrorhandlerModule } from './others/errorhandler/errorhandler.module';
+import { ConfigModule } from './config/config.module';
 
 @Module({
-    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule, PaymentsModule, ErrorhandlerModule],
+    imports: [SessionModule, RabbitModule, DataStorageModule, EventsModule, MonitoringModule, UserModule, PaymentsModule, ErrorhandlerModule, ConfigModule],
     controllers: [AppController],
     providers: [AppService, CryptoService],
 })

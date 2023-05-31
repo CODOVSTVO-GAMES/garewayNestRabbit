@@ -9,13 +9,10 @@ import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.servic
 
 @Injectable()
 export class DataStorageService {
-    @Inject(MonitoringService)
-    private readonly monitoringService: MonitoringService
-
-    @Inject(ErrorhandlerService)
-    private readonly errorHandlerService: ErrorhandlerService
-
-    constructor(private readonly rabbitService: RabbitMQService) { }
+    constructor(private readonly rabbitService: RabbitMQService,
+        private readonly errorHandlerService: ErrorhandlerService,
+        private readonly monitoringService: MonitoringService
+    ) { }
 
     async dataStoragePostResponser(body: object, res: Response) {
         const startDate = Date.now()
@@ -66,10 +63,9 @@ export class DataStorageService {
         try {
             const responseServiceDTO = await this.dataStorageGetHandler(params)
             responseDTO.data = responseServiceDTO.data
-        } catch (e) {//прописать разные статусы
+        } catch (e) {
             status = this.errorHandlerService.receprion(e)
             msg = e
-            console.log(e)
         }
 
         res.status(status).json(responseDTO)

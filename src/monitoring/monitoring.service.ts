@@ -11,4 +11,5 @@ export class MonitoringService {
         const monitoringDTO = new MonitoringDTO(service, requestName, status, msg, data, time)
         this.rabbitService.questionerMonitoring(monitoringDTO, TypesQueue.SEND_LOG)
     }
+
 }
