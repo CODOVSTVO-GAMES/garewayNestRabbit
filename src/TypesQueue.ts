@@ -17,5 +17,7 @@ export class TypesQueue {
     public static OK_CALLBACK: string = "ok_callback";
 
     public static START_CONFIG_GET: string = "get_start_config";
+
+    public static MAP_GET: string = "get_map";
 }
 

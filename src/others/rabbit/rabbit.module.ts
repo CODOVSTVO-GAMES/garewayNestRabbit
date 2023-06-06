@@ -74,6 +74,16 @@ import { RabbitMQService } from './rabbit.servicve';
         },
       },
     ]),
+    ClientsModule.register([
+      {
+        name: 'map-module',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://test:test@rabbit:5672'],
+          queue: 'to_map_service',
+        },
+      },
+    ]),
   ],
   controllers: [],
   providers: [RabbitMQService],

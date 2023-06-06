@@ -16,6 +16,7 @@ export class RabbitMQService {
         @Inject('user-module') private readonly userClient: ClientProxy,
         @Inject('payments-module') private readonly paymentsClient: ClientProxy,
         @Inject('config-module') private readonly configClient: ClientProxy,
+        @Inject('map-module') private readonly mapClient: ClientProxy
     ) { }
 
     async questionerSession(data: object, queue: string): Promise<ResponseServiceDTO> {
@@ -83,6 +84,16 @@ export class RabbitMQService {
             return new ResponseServiceDTO(json.status, json.data)
         } catch (e) {
             throw this.errorHandler(e, this.configClient)
+        }
+    }
+
+    async questionerMap(data: object, queue: string): Promise<ResponseServiceDTO> {
+        try {
+            const response = await this.mapClient.send(queue, data).pipe(timeout(4000)).toPromise()
+            const json = JSON.parse(JSON.stringify(response))
+            return new ResponseServiceDTO(json.status, json.data)
+        } catch (e) {
+            throw this.errorHandler(e, this.mapClient)
         }
     }
 
