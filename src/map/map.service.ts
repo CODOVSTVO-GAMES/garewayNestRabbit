@@ -56,46 +56,4 @@ export class MapService {
         return responseServiceDTO
     }
 
-    //---------------------------
-
-    async getMyCoordsResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.getMyCoordsHandler(params)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-map', 'get-coords', status, msg, JSON.stringify(params), deltaTime)
-        return
-    }
-
-    async getMyCoordsHandler(params: any) {
-        let data = {};
-        try {
-            data = JSON.parse(params)
-        } catch {
-            throw "parsing error"
-        }
-
-        return this.getMyCoordsLogic(data)
-    }
-
-    async getMyCoordsLogic(data: object) {
-        const responseServiceDTO = await this.rabbitService.questionerMap(data, TypesQueue.MAP_GET_MY_COORDS)
-        if (responseServiceDTO.status != 200) {
-            console.log('map servise send status: ' + responseServiceDTO.status)
-            throw responseServiceDTO.status
-        }
-        return responseServiceDTO
-    }
 }
