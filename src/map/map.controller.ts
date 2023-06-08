@@ -11,4 +11,9 @@ export class MapController {
     dataGetStorage(@Query('dto') params: string, @Res() res: Response) {
         return this.mapService.getMapResponser(params, res)
     }
+
+    @Get('coords')
+    getCoordinates(@Query('dto') params: string, @Res() res: Response) {
+        return this.mapService.getMapResponser(params, res)
+    }
 }
