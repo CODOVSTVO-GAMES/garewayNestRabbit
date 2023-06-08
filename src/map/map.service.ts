@@ -75,7 +75,7 @@ export class MapService {
         res.status(status).json(responseDTO)
 
         const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-map', 'get', status, msg, JSON.stringify(params), deltaTime)
+        this.monitoringService.sendLog('gateway-map', 'get-coords', status, msg, JSON.stringify(params), deltaTime)
         return
     }
 
