@@ -9,6 +9,8 @@ export class MapController {
 
     @Get()
     dataGetStorage(@Query('dto') params: string, @Res() res: Response) {
+        console.log(res.header)
+        console.log(JSON.stringify(res.header))
         return this.mapService.getMapResponser(params, res)
     }
 }
