@@ -56,4 +56,50 @@ export class MapService {
         return responseServiceDTO
     }
 
+
+
+
+    //------------------------------------------------
+
+    async getEnemyResponser(params: any, res: Response) {
+        const startDate = Date.now()
+        const responseDTO = new ResponseDTO()
+        let status = 200
+        let msg = 'OK'
+
+        try {
+            const responseServiceDTO = await this.getEnemyHandler(params)
+            responseDTO.data = responseServiceDTO.data
+        } catch (e) {
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+        }
+
+        res.status(status).json(responseDTO)
+
+        const deltaTime = Date.now() - startDate
+        this.monitoringService.sendLog('gateway-map', 'get', status, msg, JSON.stringify(params), deltaTime)
+        return
+    }
+
+    async getEnemyHandler(params: any) {
+        let data = {};
+        try {
+            data = JSON.parse(params)
+        } catch {
+            throw "parsing error"
+        }
+
+        return this.getEnemyLogic(data)
+    }
+
+    async getEnemyLogic(data: object) {
+        const responseServiceDTO = await this.rabbitService.questionerMap(data, TypesQueue.MAP_ENEMY_GET)
+        if (responseServiceDTO.status != 200) {
+            console.log('map servise send status: ' + responseServiceDTO.status)
+            throw responseServiceDTO.status
+        }
+        return responseServiceDTO
+    }
+
 }

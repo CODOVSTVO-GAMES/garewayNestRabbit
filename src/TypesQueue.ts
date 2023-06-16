@@ -19,6 +19,7 @@ export class TypesQueue {
     public static START_CONFIG_GET: string = "get_start_config";
 
     public static MAP_GET: string = "get_map";
+    public static MAP_ENEMY_GET: string = "get_enemy";
     public static MAP_GET_MY_COORDS: string = "get_my_coords";
 }
 

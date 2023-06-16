@@ -8,9 +8,12 @@ export class MapController {
     constructor(private readonly mapService: MapService) { }
 
     @Get()
-    dataGetStorage(@Query('dto') params: string, @Res() res: Response, @Headers() headers: any) {
-        console.log(headers)
-        console.log(JSON.stringify(headers))
+    mapGetStorage(@Query('dto') params: string, @Res() res: Response) {
+        return this.mapService.getMapResponser(params, res)
+    }
+
+    @Get()
+    enemyGetStorage(@Query('dto') params: string, @Res() res: Response) {
         return this.mapService.getMapResponser(params, res)
     }
 }
