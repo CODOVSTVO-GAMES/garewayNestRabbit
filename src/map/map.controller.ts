@@ -9,6 +9,7 @@ export class MapController {
 
     @Get('enemy')
     enemyGetStorage(@Query('dto') params: string, @Res() res: Response) {
+        console.log(params)
         return this.mapService.getEnemyResponser(params, res)
     }
 
