@@ -5,6 +5,7 @@ import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.servic
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { Response } from 'express';
 import { TypesQueue } from 'src/TypesQueue';
+import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 
 @Injectable()
 export class MapService {
@@ -98,6 +99,44 @@ export class MapService {
         if (responseServiceDTO.status != 200) {
             console.log('map servise send status: ' + responseServiceDTO.status)
             throw responseServiceDTO.status
+        }
+        return responseServiceDTO
+    }
+    
+    //--------------------------------------------------------------------------------------------
+
+    async enemyAttckPostResponser(body: object, res: Response) {
+        const startDate = Date.now()
+        const responseDTO = new ResponseDTO()
+        let status = 200
+        let msg = 'OK'
+
+        try {
+            const responseServiceDTO = await this.enemyAttckPostLogic(body)
+            responseDTO.data = responseServiceDTO.data
+        } catch (e) {
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+            console.log(e)
+            if (e == 'timeout') {
+                console.log('Сервис не отвечает но запрос положен в очередь')
+                status = 200
+                //log
+            }
+        }
+
+        res.status(status).json(responseDTO)
+
+        const deltaTime = Date.now() - startDate
+        this.monitoringService.sendLog('gateway-data', 'save', status, msg, JSON.stringify(body), deltaTime)
+        return
+    }
+
+    async enemyAttckPostLogic(data: object): Promise<ResponseServiceDTO> {
+        const responseServiceDTO = await this.rabbitService.questionerMap(data, TypesQueue.MAP_ATTACK)
+        if (responseServiceDTO.status != 200) {
+            console.log('post attack servise send status: ' + responseServiceDTO.status)
+            throw 403
         }
         return responseServiceDTO
     }
