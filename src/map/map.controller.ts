@@ -13,14 +13,14 @@ export class MapController {
         return this.mapService.getEnemyResponser(params, res)
     }
 
+    @Post('enemy')
+    enemyAttack(@Body() body: object, @Res() res: Response) {
+        return this.mapService.enemyAttckPostResponser(body, res)
+    }
+
+
     @Get()
     mapGetStorage(@Query('dto') params: string, @Res() res: Response) {
         return this.mapService.getMapResponser(params, res)
     }
-
-    @Post()
-    enemyAttack(@Body() body: object, @Res() res: Response) {
-        // return this.mapService.getMapResponser(body, res)
-    }
-
 }
