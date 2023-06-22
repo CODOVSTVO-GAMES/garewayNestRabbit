@@ -18,6 +18,11 @@ export class MapController {
         return this.mapService.enemyAttckPostResponser(body, res)
     }
 
+    @Post('win')
+    enemyWin(@Body() body: object, @Res() res: Response) {
+        return this.mapService.enemyWinPostResponser(body, res)
+    }
+
 
     @Get()
     mapGetStorage(@Query('dto') params: string, @Res() res: Response) {
