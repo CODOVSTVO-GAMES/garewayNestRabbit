@@ -7,22 +7,16 @@ export class MapController {
 
     constructor(private readonly mapService: MapService) { }
 
-    @Get('enemy')
+    @Get('enemy')//получить врагов
     enemyGetStorage(@Query('dto') params: string, @Res() res: Response) {
         console.log(params)
         return this.mapService.getEnemyResponser(params, res)
     }
 
-    @Post('enemy')
-    enemyAttack(@Body() body: object, @Res() res: Response) {
-        return this.mapService.enemyAttckPostResponser(body, res)
+    @Post('enemy')//изменить статус боя
+    enemyAttackStatus(@Body() body: object, @Res() res: Response) {
+        return this.mapService.attackStatusResponser(body, res)
     }
-
-    @Post('win')
-    enemyWin(@Body() body: object, @Res() res: Response) {
-        return this.mapService.enemyWinPostResponser(body, res)
-    }
-
 
     @Get()
     mapGetStorage(@Query('dto') params: string, @Res() res: Response) {
