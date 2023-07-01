@@ -55,7 +55,7 @@ export class DataStorageService {
 
 
     async dataStorageGetResponser(params: any, res: Response) {
-        const mres = await this.masterResponse(params, this.dataStorageGetHandler, "data-get")
+        const mres = await this.masterResponse(params, this.dataStorageGetHandler.bind(this), "data-get")
         res.status(mres.status).json(mres.resDto)
         return
     }
