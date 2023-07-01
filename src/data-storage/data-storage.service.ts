@@ -1,45 +1,22 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Inject, Injectable } from '@nestjs/common';
-import { ResponseDTO } from 'src/others/dto/ResponseDTO';
+import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { TypesQueue } from 'src/TypesQueue';
-import { MonitoringService } from 'src/monitoring/monitoring.service';
-import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
+import { MasterResponseService } from 'src/master-response/master-response.service';
 
 @Injectable()
 export class DataStorageService {
     constructor(private readonly rabbitService: RabbitMQService,
-        private readonly errorHandlerService: ErrorhandlerService,
-        private readonly monitoringService: MonitoringService
+        private readonly masterResponse: MasterResponseService
     ) { }
 
     async dataStoragePostResponser(body: object, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.dataStoragePostLogic(body)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-            if (e == 'timeout') {
-                console.log('Сервис не отвечает но запрос положен в очередь')
-                status = 200
-                //log
-            }
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-data', 'save', status, msg, JSON.stringify(body), deltaTime)
-        return
+        const mres = await this.masterResponse.get(body, this.dataStorageGetHandler.bind(this), "data-post")
+        res.status(mres.status).json(mres.resDto)
     }
+
 
     async dataStoragePostLogic(data: object): Promise<ResponseServiceDTO> {
         const responseServiceDTO = await this.rabbitService.questionerDataStorage(data, TypesQueue.DATA_POST)
@@ -55,9 +32,8 @@ export class DataStorageService {
 
 
     async dataStorageGetResponser(params: any, res: Response) {
-        const mres = await this.masterResponse(params, this.dataStorageGetHandler.bind(this), "data-get")
+        const mres = await this.masterResponse.get(params, this.dataStorageGetHandler.bind(this), "data-get")
         res.status(mres.status).json(mres.resDto)
-        return
     }
 
     async dataStorageGetHandler(params: any): Promise<ResponseServiceDTO> {
@@ -78,27 +54,6 @@ export class DataStorageService {
             throw responseServiceDTO.status
         }
         return responseServiceDTO
-    }
-
-    //----------------------------------
-    private async masterResponse(data: any, func: Function, plase: string) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await func(data)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway', plase, status, msg, JSON.stringify(data), deltaTime)
-
-        return { status: 200, resDto: responseDTO }
     }
 
 }
