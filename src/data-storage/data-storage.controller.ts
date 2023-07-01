@@ -13,7 +13,7 @@ export class DataStorageController {
     }
 
     @Get()
-    dataGetStorage(@Query('dto') params: object, @Res() res: Response) {
+    dataGetStorage(@Query('dto') params: string, @Res() res: Response) {
         return this.dataStorageService.dataStorageGetResponser(params, res)
     }
 
