@@ -9,13 +9,11 @@ import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.servic
 
 @Injectable()
 export class EventsService {
-    @Inject(MonitoringService)
-    private readonly monitoringService: MonitoringService
-
-    @Inject(ErrorhandlerService)
-    private readonly errorHandlerService: ErrorhandlerService
-
-    constructor(private readonly rabbitService: RabbitMQService) { }
+    constructor(
+        private readonly rabbitService: RabbitMQService,
+        private readonly errorHandlerService: ErrorhandlerService,
+        private readonly monitoringService: MonitoringService
+    ) { }
 
     async eventsResponser(body: object, res: Response) {
         const startDate = Date.now()
@@ -29,7 +27,6 @@ export class EventsService {
         } catch (e) {
             status = this.errorHandlerService.receprion(e)
             msg = e
-            console.log(e)
             if (e == 'timeout') {
                 console.log('Сервис не отвечает но запрос положен в очередь')
                 status = 200

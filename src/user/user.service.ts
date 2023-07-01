@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
@@ -9,13 +9,11 @@ import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.servic
 
 @Injectable()
 export class UserService {
-    @Inject(MonitoringService)
-    private readonly monitoringService: MonitoringService
-
-    @Inject(ErrorhandlerService)
-    private readonly errorHandlerService: ErrorhandlerService
-
-    constructor(private readonly rabbitService: RabbitMQService) { }
+    constructor(
+        private readonly rabbitService: RabbitMQService,
+        private readonly errorHandlerService: ErrorhandlerService,
+        private readonly monitoringService: MonitoringService
+    ) { }
 
     async userResponser(body: object, res: Response) {
         const startDate = Date.now()
@@ -24,12 +22,10 @@ export class UserService {
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.userLogic(body)
-            responseDTO.data = responseServiceDTO.data
+            responseDTO.data = (await this.userLogic(body)).data
         } catch (e) {
             status = this.errorHandlerService.receprion(e)
             msg = e
-            console.log(e)
         }
 
         res.status(status).json(responseDTO)

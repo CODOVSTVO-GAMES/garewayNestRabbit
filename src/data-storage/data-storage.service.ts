@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Inject, Injectable } from '@nestjs/common';
 import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { Response } from 'express';
@@ -26,7 +27,6 @@ export class DataStorageService {
         } catch (e) {
             status = this.errorHandlerService.receprion(e)
             msg = e
-            console.log(e)
             if (e == 'timeout') {
                 console.log('Сервис не отвечает но запрос положен в очередь')
                 status = 200
@@ -55,23 +55,8 @@ export class DataStorageService {
 
 
     async dataStorageGetResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.dataStorageGetHandler(params)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-data', 'get', status, msg, JSON.stringify(params), deltaTime)
+        const mres = await this.masterResponse(params, this.dataStorageGetHandler, "data-get")
+        res.status(mres.status).json(mres.resDto)
         return
     }
 
@@ -94,4 +79,26 @@ export class DataStorageService {
         }
         return responseServiceDTO
     }
+
+    //----------------------------------
+    private async masterResponse(data: any, func: Function, plase: string) {
+        const startDate = Date.now()
+        const responseDTO = new ResponseDTO()
+        let status = 200
+        let msg = 'OK'
+
+        try {
+            const responseServiceDTO = await func(data)
+            responseDTO.data = responseServiceDTO.data
+        } catch (e) {
+            status = this.errorHandlerService.receprion(e)
+            msg = e
+        }
+
+        const deltaTime = Date.now() - startDate
+        this.monitoringService.sendLog('gateway', plase, status, msg, JSON.stringify(data), deltaTime)
+
+        return { status: 200, resDto: responseDTO }
+    }
+
 }

@@ -12,13 +12,11 @@ import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.servic
 
 @Injectable()
 export class SessionService {
-    @Inject(MonitoringService)
-    private readonly monitoringService: MonitoringService
-
-    @Inject(ErrorhandlerService)
-    private readonly errorHandlerService: ErrorhandlerService
-
-    constructor(private readonly rabbitService: RabbitMQService) { }
+    constructor(
+        private readonly rabbitService: RabbitMQService,
+        private readonly errorHandlerService: ErrorhandlerService,
+        private readonly monitoringService: MonitoringService
+    ) { }
 
     async sessionResponser(body: object, res: Response) {
         const startDate = Date.now()
@@ -27,12 +25,11 @@ export class SessionService {
         let msg = 'OK'
 
         try {
-            const responseServiceDTO = await this.sessionHandler(body)
+            const responseServiceDTO = await this.sessionLogic(body)
             responseDTO.data = responseServiceDTO.data
         } catch (e) {
             status = this.errorHandlerService.receprion(e)
             msg = e
-            console.log(e)
         }
 
         res.status(status).json(responseDTO)
@@ -40,10 +37,6 @@ export class SessionService {
         const deltaTime = Date.now() - startDate
         this.monitoringService.sendLog('gateway-session', 'update', status, msg, JSON.stringify(body), deltaTime)
         return
-    }
-
-    private async sessionHandler(body: object): Promise<ResponseServiceDTO> {
-        return this.sessionLogic(body)
     }
 
     private async sessionLogic(data: object): Promise<ResponseServiceDTO> {

@@ -2,9 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   Res,
 } from '@nestjs/common';
 import { SessionService } from './session.service';

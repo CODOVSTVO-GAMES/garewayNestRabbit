@@ -2,11 +2,7 @@ import {
     Controller,
     Post,
     Body,
-    Patch,
-    Param,
-    Delete,
     Res,
-    Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Response } from 'express';
