@@ -31,20 +31,9 @@ export class DataStorageService {
     //----------------------------------
 
 
-    async dataStorageGetResponser(params: any, res: Response) {
-        const mres = await this.masterResponse.get(params, this.dataStorageGetHandler.bind(this), "data-get")
+    async dataStorageGetResponser(params: object, res: Response) {
+        const mres = await this.masterResponse.get(params, this.dataStorageGetLogic.bind(this), "data-get")
         res.status(mres.status).json(mres.resDto)
-    }
-
-    async dataStorageGetHandler(params: any): Promise<ResponseServiceDTO> {
-        let data = {};
-        try {
-            data = JSON.parse(params)
-        } catch {
-            throw "parsing error"
-        }
-        console.log('123 проверка')
-        return this.dataStorageGetLogic(data)
     }
 
     async dataStorageGetLogic(data: object) {
