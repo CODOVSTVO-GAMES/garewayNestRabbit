@@ -1,38 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { TypesQueue } from 'src/TypesQueue';
-import { MonitoringService } from 'src/monitoring/monitoring.service';
-import { ResponseDTO } from 'src/others/dto/ResponseDTO';
+import { MasterResponseService } from 'src/master-response/master-response.service';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
-import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 
 @Injectable()
 export class ConfigService {
     constructor(private readonly rabbitService: RabbitMQService,
-        private readonly errorHandlerService: ErrorhandlerService,
-        private readonly monitoringService: MonitoringService
+        private readonly masterResponse: MasterResponseService
     ) { }
 
     async configGetResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.configGetHandler(params)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-start-config', 'get', status, msg, JSON.stringify(params), deltaTime)
-        return
+        const mres = await this.masterResponse.get(params, this.configGetHandler.bind(this), "config-get")
+        res.status(mres.status).json(mres.resDto)
     }
 
     async configGetHandler(params: any): Promise<ResponseServiceDTO> {

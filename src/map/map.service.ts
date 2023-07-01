@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
-import { ResponseDTO } from 'src/others/dto/ResponseDTO';
 import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
 import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { Response } from 'express';
 import { TypesQueue } from 'src/TypesQueue';
 import { ResponseServiceDTO } from 'src/others/dto/ResponseServiceDTO';
+import { MasterResponseService } from 'src/master-response/master-response.service';
 
 @Injectable()
 export class MapService {
@@ -13,28 +13,13 @@ export class MapService {
     constructor(
         private readonly rabbitService: RabbitMQService,
         private readonly errorHandlerService: ErrorhandlerService,
-        private readonly monitoringService: MonitoringService
+        private readonly monitoringService: MonitoringService,
+        private readonly masterResponse: MasterResponseService
     ) { }
 
     async getMapResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.getMapHandler(params)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-map', 'get', status, msg, JSON.stringify(params), deltaTime)
-        return
+        const mres = await this.masterResponse.get(params, this.getMapHandler.bind(this), "map-get")
+        res.status(mres.status).json(mres.resDto)
     }
 
     async getMapHandler(params: any) {
@@ -57,30 +42,11 @@ export class MapService {
         return responseServiceDTO
     }
 
-
-
-
     //------------------------------------------------
 
     async getEnemyResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.getEnemyHandler(params)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-map', 'get', status, msg, JSON.stringify(params), deltaTime)
-        return
+        const mres = await this.masterResponse.get(params, this.getEnemyHandler.bind(this), "enemy-get")
+        res.status(mres.status).json(mres.resDto)
     }
 
     async getEnemyHandler(params: any) {
@@ -106,30 +72,8 @@ export class MapService {
     //--------------------------------------------------------------------------------------------
 
     async attackStatusResponser(body: object, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 200
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.attackStatusLogic(body)
-            responseDTO.data = responseServiceDTO.data
-        } catch (e) {
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-            console.log(e)
-            if (e == 'timeout') {
-                console.log('Сервис не отвечает но запрос положен в очередь')
-                status = 200
-                //log
-            }
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-data', 'save', status, msg, JSON.stringify(body), deltaTime)
-        return
+        const mres = await this.masterResponse.get(body, this.attackStatusLogic.bind(this), "attack-status")
+        res.status(mres.status).json(mres.resDto)
     }
 
     async attackStatusLogic(data: object): Promise<ResponseServiceDTO> {

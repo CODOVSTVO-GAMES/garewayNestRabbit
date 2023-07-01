@@ -6,46 +6,22 @@ import { RabbitMQService } from 'src/others/rabbit/rabbit.servicve';
 import { MonitoringService } from 'src/monitoring/monitoring.service';
 import { TypesQueue } from 'src/TypesQueue';
 import { ErrorhandlerService } from 'src/others/errorhandler/errorhandler.service';
+import { MasterResponseService } from 'src/master-response/master-response.service';
 
 @Injectable()
 export class PaymentsService {
-
-    @Inject(MonitoringService)
-    private readonly monitoringService: MonitoringService
-
-    @Inject(ErrorhandlerService)
-    private readonly errorHandlerService: ErrorhandlerService
-
-    constructor(private readonly rabbitService: RabbitMQService) { }
+    constructor(private readonly rabbitService: RabbitMQService,
+        private readonly masterResponse: MasterResponseService,
+        private readonly errorHandlerService: ErrorhandlerService,
+        private readonly monitoringService: MonitoringService
+    ) { }
 
     async productsGetResponser(params: any, res: Response) {
-        const startDate = Date.now()
-        const responseDTO = new ResponseDTO()
-        let status = 0
-        let msg = 'OK'
-
-        try {
-            const responseServiceDTO = await this.productsGetHandler()
-            responseDTO.data = responseServiceDTO.data
-            status = 200
-        } catch (e) {//прописать разные статусы
-            status = this.errorHandlerService.receprion(e)
-            msg = e
-            console.log(e)
-        }
-
-        res.status(status).json(responseDTO)
-
-        const deltaTime = Date.now() - startDate
-        this.monitoringService.sendLog('gateway-payments', 'get', status, msg, JSON.stringify(params), deltaTime)
-        return
+        const mres = await this.masterResponse.get(params, this.productsGetLogic.bind(this), "product-get")
+        res.status(mres.status).json(mres.resDto)
     }
 
-    private async productsGetHandler(): Promise<ResponseServiceDTO> {
-        return this.productsGetLogic()
-    }
-
-    private async productsGetLogic() {
+    private async productsGetLogic(params: any) {
         const responseServiceDTO = await this.rabbitService.questionerPayments({}, TypesQueue.PRODUCTS_GET)
         if (responseServiceDTO.status != 200) {
             console.log('payments servise send status: ' + responseServiceDTO.status)
