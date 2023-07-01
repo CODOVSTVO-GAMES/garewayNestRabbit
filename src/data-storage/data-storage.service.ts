@@ -67,7 +67,7 @@ export class DataStorageService {
         } catch {
             throw "parsing error"
         }
-
+        console.log('123 проверка')
         return this.dataStorageGetLogic(data)
     }
 
