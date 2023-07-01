@@ -13,7 +13,7 @@ export class DataStorageService {
     ) { }
 
     async dataStoragePostResponser(body: object, res: Response) {
-        const mres = await this.masterResponse.get(body, this.dataStorageGetHandler.bind(this), "data-post")
+        const mres = await this.masterResponse.get(body, this.dataStoragePostLogic.bind(this), "data-post")
         res.status(mres.status).json(mres.resDto)
     }
 
